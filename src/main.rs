@@ -1,4 +1,6 @@
 extern crate lazy_static;
+extern crate regex;
+extern crate rand;
 mod constants;
 mod page;
 mod parser;
@@ -6,13 +8,13 @@ mod variant;
 
 use page::*;
 use variant::Variant;
-use constants::ERROR_MESSAGES;
+use constants::*;
 
 use rand::prelude::*;
 
 use std::env;
-use std::fs::{self, File};
-use std::io::{self, BufRead};
+use std::fs::{File, OpenOptions};
+use std::io::{self, BufRead, Write};
 use std::panic;
 
 macro_rules! sb_panic {
@@ -29,6 +31,8 @@ pub struct Program {
 
 	drawer: Vec<Page>,
 	memory: Option<Variant>,
+
+	line_number: usize,
 }
 
 impl Program {
@@ -43,6 +47,7 @@ impl Program {
 			turned_to_any_page: false,
 			drawer: Vec::<Page>::new(),
 			memory: None,
+			line_number: 1,
 		}
 	}
 
@@ -53,6 +58,44 @@ impl Program {
 
 	pub fn write_value(&mut self, value: Option<Variant>) {
 		self.pages[self.current_page].write_value(value, false, 0);
+	}
+
+	pub fn publish(&self, target: String, end: String) {
+		let mut output = String::with_capacity(100);
+		for p in 0..5 {
+			for v in 0..3 {
+				let concat = match &self.pages[p].values[v] {
+					Some(val) => val.print(),
+					None => String::new(),
+				};
+
+				output.push_str(&concat);
+				if !concat.is_empty() {
+					output.push('\n');
+				}
+			}
+		}
+
+		let wrapup = if !end.is_empty() { end } else {
+			if self.pages[PageType::Str as usize].has_any_contents() {
+				DEFAULT_WRAPUP.into()
+			} else {
+				DEFAULT_WRAPUP_QED.into()
+			}
+		};
+
+		if target == "console" {
+			print!("{}{}", output, wrapup);
+			io::stdout().flush().unwrap_or_else(|_| sb_panic!(self.line_number));
+		} else {
+			let mut outfile = OpenOptions::new()
+				.write(true)
+				.append(true)
+				.open(&target)
+				.unwrap_or_else(|_| sb_panic!(self.line_number));
+
+			write!(outfile, "{}{}", output, wrapup).unwrap_or_else(|_| sb_panic!(self.line_number));
+		}
 	}
 
 	pub fn tear_out_page(&mut self) {
@@ -98,19 +141,18 @@ fn main() {
 	let infile = File::open(&path).unwrap();
 
 	let mut program = Program::new();
-	let mut line_num = 1usize;
 	for line in io::BufReader::new(infile).lines() {
 		let tokenized = match parser::tokenize_line(line.unwrap()) {
 			Some(vec) => vec,
 			None => {
-				sb_panic!(line_num);
+				sb_panic!(program.line_number);
 			},
 		};
 
 		if !parser::execute_token_vector(&mut program, tokenized) {
-			sb_panic!(line_num);
+			sb_panic!(program.line_number);
 		}
 
-		line_num += 1;
+		program.line_number += 1;
 	}
 }

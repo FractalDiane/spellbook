@@ -8,6 +8,16 @@ pub enum Variant {
 }
 
 impl Variant {
+	pub fn print(&self) -> String {
+		match self {
+			Variant::Boolean(b) => b.to_string(),
+			Variant::Integer(i) => i.to_string(),
+			Variant::Float(f) => f.to_string(),
+			Variant::Str(s) => s.to_string(),
+			Variant::Routine(_) => "BLAH BLAH BLAH".into(),
+		}
+	}
+
 	pub fn to_bool(&self) -> bool {
 		match self {
 			Variant::Boolean(b) => *b,

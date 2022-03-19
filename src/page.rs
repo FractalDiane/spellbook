@@ -9,13 +9,6 @@ pub enum PageType {
 	Routine,
 }
 
-struct Entry {
-	boolean: bool,
-	integer: i64,
-	float: f64,
-	string: String,
-}
-
 #[derive(Clone)]
 pub struct Page {
 	pub entry_names: [String; 3],
@@ -78,6 +71,10 @@ impl Page {
 				self.values[index] = None;
 			},
 		}
+	}
+
+	pub fn has_any_contents(&self) -> bool {
+		self.values.iter().any(|v| v.is_some())
 	}
 
 	pub fn clear_page(&mut self) {
