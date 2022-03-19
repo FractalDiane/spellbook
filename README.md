@@ -17,9 +17,9 @@ Due to budget constraints, you have a *very* small spellbook to write in, with o
 
 | Chapter Title | Contents |
 | ------------- | -------- |
-| Boolean | Boolean values, `true` or `false`. |
-| Integer | Integer numbers. |
-| Illusions | Floating-point numbers. Called so because they're merely *pretending* to be real numbers. |
+| Presages | Boolean values, `true` or `false`. |
+| Hexes | Integer numbers. |
+| Illusions | Floating-point numbers. |
 | Incantations | Character strings. |
 | Recipes | Functions. |
 

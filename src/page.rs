@@ -1,3 +1,8 @@
+// *~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*
+//        SPELLBOOK INTERPRETER
+//           BY DIANE SPARKS
+// *~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*
+
 use crate::variant::Variant;
 
 #[derive(Clone)]

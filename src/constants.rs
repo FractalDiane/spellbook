@@ -1,3 +1,8 @@
+// *~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*
+//        SPELLBOOK INTERPRETER
+//           BY DIANE SPARKS
+// *~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*
+
 pub const ERROR_MESSAGES: [&'static str; 12] = [
 	"You accidentally transformed yourself into a cute, fluffy demon.",
 	"The spell ricocheted off the wall and knocked everything off your desk.",

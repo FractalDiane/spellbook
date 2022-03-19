@@ -1,5 +1,6 @@
 // *~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*
 //        SPELLBOOK INTERPRETER
+//           BY DIANE SPARKS
 // *~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*
 
 use std::str::SplitWhitespace;
@@ -330,7 +331,7 @@ fn execute_tokens(current: &Token, next: Option<&Token>, state: &mut ParserState
 					match current {
 						Token::Literal(lit) => {
 							if state.cached_keyphrase == Some(Keyphrase::WriteEntry) {
-								program.write_value(Some(lit.clone()));
+								program.write_literal_value(Some(lit.clone()));
 								state.clear_cache();
 							} else {
 								return false;
@@ -365,6 +366,7 @@ fn execute_tokens(current: &Token, next: Option<&Token>, state: &mut ParserState
 							} else { 
 								state.cached_identifier.clone()
 							},
+							false,
 							String::new(),
 						);
 
@@ -385,6 +387,7 @@ fn execute_tokens(current: &Token, next: Option<&Token>, state: &mut ParserState
 										} else { 
 											state.cached_identifier.clone()
 										},
+										true,
 										st.to_string(),
 									);
 

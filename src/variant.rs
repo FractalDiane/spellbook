@@ -1,3 +1,8 @@
+// *~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*
+//        SPELLBOOK INTERPRETER
+//           BY DIANE SPARKS
+// *~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*
+
 #[derive(Debug, PartialEq, Clone)]
 pub enum Variant {
 	Boolean(bool),

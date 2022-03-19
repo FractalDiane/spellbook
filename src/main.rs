@@ -1,5 +1,8 @@
-extern crate lazy_static;
-extern crate regex;
+// *~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*
+//        SPELLBOOK INTERPRETER
+//           BY DIANE SPARKS
+// *~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*
+
 extern crate rand;
 mod constants;
 mod page;
@@ -21,6 +24,14 @@ macro_rules! sb_panic {
 	($line:expr) => {
 		std::panic::panic_any($line);
 	};
+}
+
+fn forget_chance(x: usize) -> f64 {
+	if x < 5 {
+		0.0
+	} else {
+		1.0 - (1.0 / (((x - 4) as f64).powf(0.3)))
+	}
 }
 
 pub struct Program {
@@ -56,11 +67,11 @@ impl Program {
 		self.turned_to_any_page = true;
 	}
 
-	pub fn write_value(&mut self, value: Option<Variant>) {
+	pub fn write_literal_value(&mut self, value: Option<Variant>) {
 		self.pages[self.current_page].write_value(value, false, 0);
 	}
 
-	pub fn publish(&self, target: String, end: String) {
+	pub fn publish(&self, target: String, override_end: bool, end: String) {
 		let mut output = String::with_capacity(100);
 		for p in 0..5 {
 			for v in 0..3 {
@@ -76,7 +87,7 @@ impl Program {
 			}
 		}
 
-		let wrapup = if !end.is_empty() { end } else {
+		let wrapup = if override_end { end } else {
 			if self.pages[PageType::Str as usize].has_any_contents() {
 				DEFAULT_WRAPUP.into()
 			} else {
@@ -115,7 +126,56 @@ impl Program {
 	}
 
 	pub fn memorize_value(&mut self, value: Option<Variant>) {
-		self.memory = value;
+		let result = match value {
+			Some(ref val) => {
+				let mut rng = thread_rng();
+				match val {
+					Variant::Str(string) => {
+						let modified = string.split_whitespace().enumerate().map(|(i, word)| {
+							if rng.gen_bool(forget_chance(i)) {
+								"something".into()
+							} else {
+								word.to_string()
+							}
+						}).collect::<Vec<String>>();
+
+						Some(Variant::Str(modified.join(" ")))
+					},
+					Variant::Integer(int) => {
+						let as_str = int.to_string();
+						let modified = as_str.chars().enumerate().map(|(i, digit)| {
+							let d = digit as u8;
+							if rng.gen_bool(forget_chance(i)) {
+								(rng.gen_range(0..=9) + b'0') as char
+							} else {
+								d as char
+							}
+						}).fold(String::with_capacity(10), |mut st, c| { st.push(c); st });
+
+						Some(Variant::Integer(modified.parse::<i64>().unwrap()))
+					},
+					Variant::Float(float) => {
+						let as_str = float.to_string();
+						let modified = as_str.chars().enumerate().map(|(i, digit)| {
+							let d = digit as u8;
+							if d != b'.' && rng.gen_bool(forget_chance(i)) {
+								(rng.gen_range(0..=9) + b'0') as char
+							} else {
+								d as char
+							}
+						}).fold(String::with_capacity(10), |mut st, c| { st.push(c); st });
+
+						Some(Variant::Float(modified.parse::<f64>().unwrap()))
+					},
+					_ => {
+						value
+					},
+				}
+			},
+			None => None,
+		};
+
+		self.memory = result;
 	}
 }
 
@@ -142,15 +202,22 @@ fn main() {
 
 	let mut program = Program::new();
 	for line in io::BufReader::new(infile).lines() {
-		let tokenized = match parser::tokenize_line(line.unwrap()) {
-			Some(vec) => vec,
-			None => {
-				sb_panic!(program.line_number);
+		match line {
+			Ok(ln) => {
+				if !ln.trim().is_empty() {
+					let tokenized = match parser::tokenize_line(ln) {
+						Some(vec) => vec,
+						None => {
+							sb_panic!(program.line_number);
+						},
+					};
+			
+					if !parser::execute_token_vector(&mut program, tokenized) {
+						sb_panic!(program.line_number);
+					}
+				}
 			},
-		};
-
-		if !parser::execute_token_vector(&mut program, tokenized) {
-			sb_panic!(program.line_number);
+			Err(_) => {},
 		}
 
 		program.line_number += 1;
