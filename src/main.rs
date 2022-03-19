@@ -3,8 +3,12 @@
 //           BY DIANE SPARKS
 // *~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*
 
+#![feature(iter_advance_by)]
+
 extern crate rand;
+extern crate peekmore;
 mod constants;
+mod macros;
 mod page;
 mod parser;
 mod variant;
@@ -19,12 +23,6 @@ use std::env;
 use std::fs::{File, OpenOptions};
 use std::io::{self, BufRead, Write};
 use std::panic;
-
-macro_rules! sb_panic {
-	($line:expr) => {
-		std::panic::panic_any($line);
-	};
-}
 
 fn forget_chance(x: usize) -> f64 {
 	if x < 5 {
@@ -67,11 +65,27 @@ impl Program {
 		self.turned_to_any_page = true;
 	}
 
-	pub fn write_literal_value(&mut self, value: Option<Variant>) {
-		self.pages[self.current_page].write_value(value, false, 0);
+	pub fn write_literal_value(&mut self, name: String, value: Option<Variant>) {
+		if !self.turned_to_any_page || self.pages[self.current_page].entry_names.contains(&name) {
+			sb_panic!(self.line_number);
+		}
+
+		self.pages[self.current_page].write_value(name, value, false, 0);
 	}
 
-	pub fn publish(&self, target: String, override_end: bool, end: String) {
+	pub fn write_memory_value(&mut self, name: String) {
+		if !self.turned_to_any_page || self.pages[self.current_page].entry_names.contains(&name) {
+			sb_panic!(self.line_number);
+		}
+
+		self.pages[self.current_page].write_value(name, self.memory.clone(), false, 0);
+	}
+
+	pub fn try_get_value(&self, name: &String) -> Option<Variant> {
+		self.pages[self.current_page].read_value_by_name(&name)
+	}
+
+	pub fn publish(&self, not_console: bool, target: String, override_end: bool, end: String) {
 		let mut output = String::with_capacity(100);
 		for p in 0..5 {
 			for v in 0..3 {
@@ -95,11 +109,12 @@ impl Program {
 			}
 		};
 
-		if target == "console" {
+		if !not_console {
 			print!("{}{}", output, wrapup);
 			io::stdout().flush().unwrap_or_else(|_| sb_panic!(self.line_number));
 		} else {
 			let mut outfile = OpenOptions::new()
+				.create(true)
 				.write(true)
 				.append(true)
 				.open(&target)
@@ -111,7 +126,7 @@ impl Program {
 
 	pub fn tear_out_page(&mut self) {
 		if !self.turned_to_any_page {
-			panic!();
+			sb_panic!(self.line_number);
 		}
 
 		self.drawer.push(self.pages[self.current_page].clone());
@@ -121,7 +136,7 @@ impl Program {
 	pub fn put_back_page(&mut self) {
 		let page = self.drawer.pop().unwrap();
 		for i in 0..3 {
-			self.pages[self.current_page].write_value(page.values[i].clone(), true, i);
+			self.pages[self.current_page].write_value(page.entry_names[i].clone(), page.values[i].clone(), true, i);
 		}
 	}
 
@@ -133,7 +148,12 @@ impl Program {
 					Variant::Str(string) => {
 						let modified = string.split_whitespace().enumerate().map(|(i, word)| {
 							if rng.gen_bool(forget_chance(i)) {
-								"something".into()
+								if rng.gen_bool(0.25) {
+									String::new()
+								} else {
+									"something".into()
+								}
+								
 							} else {
 								word.to_string()
 							}
@@ -180,7 +200,7 @@ impl Program {
 }
 
 fn main() {
-	panic::set_hook(Box::new(|info| {
+	/*panic::set_hook(Box::new(|info| {
 		let mut rng = thread_rng();
 		let index: usize = rng.gen_range(0..10);
 		let message = ERROR_MESSAGES[index];
@@ -189,7 +209,7 @@ fn main() {
 		} else {
 			eprintln!("\x1b[0;91mCatastrophe!\x1b[0m\n{}", message);
 		}
-	}));
+	}));*/
 
 	let mut args = env::args();
 	if args.len() != 2 {
@@ -212,9 +232,7 @@ fn main() {
 						},
 					};
 			
-					if !parser::execute_token_vector(&mut program, tokenized) {
-						sb_panic!(program.line_number);
-					}
+					parser::execute_token_vector(&mut program, tokenized);
 				}
 			},
 			Err(_) => {},

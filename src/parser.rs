@@ -3,12 +3,14 @@
 //           BY DIANE SPARKS
 // *~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*
 
-use std::str::SplitWhitespace;
-use std::thread::current;
+use peekmore::{PeekMore, PeekMoreIterator};
 
 use crate::variant::Variant;
 use crate::Program;
 use crate::page::PageType;
+use crate::sb_panic;
+
+use std::slice::Iter;
 
 #[derive(Debug, PartialEq, Clone)]
 pub enum Keyphrase {
@@ -22,6 +24,9 @@ pub enum Keyphrase {
 	WithThe,
 	WithTheValueOf,
 	FromDivineIntervention,
+
+	Memorize,
+	FromMemory,
 	
 
 	PublishSpellbookTo,
@@ -86,14 +91,33 @@ fn split_line_with_quotes(line: String) -> Vec<String> {
 	vec
 }
 
+fn expect_subtokens(iter: &mut PeekMoreIterator<Iter<&str>>, subtokens: &[&str]) -> bool {
+	let mut index = 0;
+	for st in subtokens {
+		if let Some(item) = iter.peek_forward(index) {
+			if st != *item {
+				return false;
+			}
+		} else {
+			return false;
+		}
+
+		index += 1;
+	}
+
+	iter.advance_by(subtokens.len()).unwrap();
+	true
+}
+
 pub fn tokenize_line(line: String) -> Option<Vec<Token>> {
 	let mut tokens = vec![];
 	let split = split_line_with_quotes(line);
-	let mut subtokens = split.iter().map(|s| &**s);
+	let vec = split.iter().map(|s| &**s).collect::<Vec<&str>>();
+	let mut subtokens = vec.iter().peekmore();
 	while let Some(st) = subtokens.next() {
-		match st {
+		match *st {
 			"turn" => {
-				if subtokens.next() == Some("to") && subtokens.next() == Some("chapter") {
+				if expect_subtokens(&mut subtokens, &["to", "chapter"]) {
 					let token = Token::Keyphrase(Keyphrase::TurnToChapter);
 					tokens.push(token);
 				} else {
@@ -101,7 +125,7 @@ pub fn tokenize_line(line: String) -> Option<Vec<Token>> {
 				}
 			},
 			"tear" => {
-				if subtokens.next() == Some("out") && subtokens.next() == Some("chapter") {
+				if expect_subtokens(&mut subtokens, &["out", "chapter"]) {
 					let token = Token::Keyphrase(Keyphrase::TearOutChapter);
 					tokens.push(token);
 				} else {
@@ -109,7 +133,7 @@ pub fn tokenize_line(line: String) -> Option<Vec<Token>> {
 				}
 			},
 			"write" => {
-				if subtokens.next() == Some("entry") {
+				if expect_subtokens(&mut subtokens, &["entry"]) {
 					let token = Token::Keyphrase(Keyphrase::WriteEntry);
 					tokens.push(token);
 				} else {
@@ -118,12 +142,12 @@ pub fn tokenize_line(line: String) -> Option<Vec<Token>> {
 			},
 			"with" => {
 				match subtokens.next() {
-					Some("value") => {
+					Some(&"value") => {
 						let token = Token::Keyphrase(Keyphrase::WithValue);
 						tokens.push(token);
 					},
-					Some("the") => {
-						if subtokens.next() == Some("value") && subtokens.next() == Some("of") {
+					Some(&"the") => {
+						if expect_subtokens(&mut subtokens, &["value", "of"]) {
 							let token = Token::Keyphrase(Keyphrase::WithTheValueOf);
 							tokens.push(token);
 						} else {
@@ -136,15 +160,18 @@ pub fn tokenize_line(line: String) -> Option<Vec<Token>> {
 				}
 			},
 			"from" => {
-				if subtokens.next() == Some("divine") && subtokens.next() == Some("intervention") {
+				if expect_subtokens(&mut subtokens, &["divine", "intervention"]) {
 					let token = Token::Keyphrase(Keyphrase::FromDivineIntervention);
+					tokens.push(token);
+				} else if expect_subtokens(&mut subtokens, &["memory"]) {
+					let token = Token::Keyphrase(Keyphrase::FromMemory);
 					tokens.push(token);
 				} else {
 					return None;
 				}
 			},
 			"publish" => {
-				if subtokens.next() == Some("spellbook") && subtokens.next() == Some("to") {
+				if expect_subtokens(&mut subtokens, &["spellbook", "to"]) {
 					let token = Token::Keyphrase(Keyphrase::PublishSpellbookTo);
 					tokens.push(token);
 				} else {
@@ -153,16 +180,16 @@ pub fn tokenize_line(line: String) -> Option<Vec<Token>> {
 			},
 			"and" => {
 				match subtokens.next() {
-					Some("put") => {
-						if subtokens.next() == Some("it") && subtokens.next() == Some("in") && subtokens.next() == Some("the") && subtokens.next() == Some("drawer") {
+					Some(&"put") => {
+						if expect_subtokens(&mut subtokens, &["it", "in", "the", "drawer"]) {
 							let token = Token::Keyphrase(Keyphrase::AndPutItInTheDrawer);
 							tokens.push(token);
 						} else {
 							return None;
 						}
 					},
-					Some("throw") => {
-						if subtokens.next() == Some("it") && subtokens.next() == Some("in") && subtokens.next() == Some("the") && subtokens.next() == Some("trash") {
+					Some(&"throw") => {
+						if expect_subtokens(&mut subtokens, &["it", "in", "the", "trash"]) {
 							let token = Token::Keyphrase(Keyphrase::AndThrowItInTheTrash);
 							tokens.push(token);
 						} else {
@@ -175,17 +202,21 @@ pub fn tokenize_line(line: String) -> Option<Vec<Token>> {
 				}
 			}
 			"wrapped" => {
-				if subtokens.next() == Some("up") && subtokens.next() == Some("with") {
+				if expect_subtokens(&mut subtokens, &["up", "with"]) {
 					let token = Token::Keyphrase(Keyphrase::WrappedUpWith);
 					tokens.push(token);
 				} else {
 					return None;
 				}
 			},
+			"memorize" => {
+				let token = Token::Keyphrase(Keyphrase::Memorize);
+				tokens.push(token);
+			},
 
 			"Presages" | "Hexes" | "Illusions" | "Incantations" | "Recipes" |
 			"console" => {
-				tokens.push(Token::Builtin(st.into()));
+				tokens.push(Token::Builtin(st.to_string()));
 			},
 
 			_ => {
@@ -212,23 +243,29 @@ pub fn tokenize_line(line: String) -> Option<Vec<Token>> {
 	Some(tokens)
 }
 
+#[derive(PartialEq)]
+enum ParseStateStatus {
+	Top,
+	Keyphrase(Keyphrase),
+	Operation,
+}
+
 struct ParserState {
 	status: ParseStateStatus,
-	previous_status: ParseStateStatus,
-
 	cached_keyphrase: Option<Keyphrase>,
 	cached_identifier: String,
 	cached_builtin: String,
+	cached_literal: String,
 }
 
 impl ParserState {
 	pub fn new() -> Self {
 		Self{
 			status: ParseStateStatus::Top,
-			previous_status: ParseStateStatus::Null,
 			cached_keyphrase: None,
-			cached_identifier: String::new(),
-			cached_builtin: String::new(),
+			cached_identifier: String::with_capacity(20),
+			cached_builtin: String::with_capacity(20),
+			cached_literal: String::with_capacity(20),
 		}
 	}
 
@@ -236,6 +273,7 @@ impl ParserState {
 		self.cached_keyphrase = None;
 		self.cached_identifier.clear();
 		self.cached_builtin.clear();
+		self.cached_literal.clear();
 		self.status = ParseStateStatus::Top;
 	}
 
@@ -243,33 +281,26 @@ impl ParserState {
 		self.cached_keyphrase.is_none()
 		&& self.cached_identifier.is_empty()
 		&& self.cached_builtin.is_empty()
+		&& self.cached_literal.is_empty()
 		&& self.status == ParseStateStatus::Top
 	}
 }
 
-#[derive(PartialEq)]
-enum ParseStateStatus {
-	Null,
-	Top,
-	Keyphrase(Keyphrase),
-	Operation,
-}
-
-pub fn execute_token_vector(program: &mut Program, tokens: Vec<Token>) -> bool {
+pub fn execute_token_vector(program: &mut Program, tokens: Vec<Token>) {
+	println!("{:?}", tokens);
 	let mut state = ParserState::new();
 	let mut prev_iter = tokens.iter();
 	prev_iter.next().unwrap();
 	for (current, next) in tokens.iter().zip(prev_iter) {
-		if !execute_tokens(current, Some(next), &mut state, program) {
-			return false;
-		}
+		execute_tokens(current, Some(next), &mut state, program);
 	}
 
-	let final_success = execute_tokens(tokens.as_slice().last().unwrap(), None, &mut state, program);
-	final_success && state.is_cache_clear()
+	while !state.is_cache_clear() {
+		execute_tokens(tokens.as_slice().last().unwrap(), None, &mut state, program);
+	}
 }
 
-fn execute_tokens(current: &Token, next: Option<&Token>, state: &mut ParserState, program: &mut Program) -> bool {
+fn execute_tokens(current: &Token, next: Option<&Token>, state: &mut ParserState, program: &mut Program) {
 	match state.status {
 		ParseStateStatus::Top => {
 			match current {
@@ -277,7 +308,7 @@ fn execute_tokens(current: &Token, next: Option<&Token>, state: &mut ParserState
 					state.status = ParseStateStatus::Keyphrase(kp.clone());
 				},
 				_ => {
-					return false;
+					sb_panic!(program.line_number);
 				},
 			}
 		},
@@ -304,14 +335,14 @@ fn execute_tokens(current: &Token, next: Option<&Token>, state: &mut ParserState
 									program.turn_to_page(PageType::Routine as usize);
 								},
 								_ => {
-									return false;
+									sb_panic!(program.line_number);
 								},
 							}
 
 							state.clear_cache();
 						},
 						_ => {
-							return false;
+							sb_panic!(program.line_number);
 						},
 					}
 				},
@@ -323,7 +354,7 @@ fn execute_tokens(current: &Token, next: Option<&Token>, state: &mut ParserState
 							state.status = ParseStateStatus::Top;
 						},
 						_ => {
-							return false;
+							sb_panic!(program.line_number);
 						},
 					}
 				},
@@ -331,15 +362,23 @@ fn execute_tokens(current: &Token, next: Option<&Token>, state: &mut ParserState
 					match current {
 						Token::Literal(lit) => {
 							if state.cached_keyphrase == Some(Keyphrase::WriteEntry) {
-								program.write_literal_value(Some(lit.clone()));
+								program.write_literal_value(state.cached_identifier.clone(), Some(lit.clone()));
 								state.clear_cache();
 							} else {
-								return false;
+								sb_panic!(program.line_number);
 							}
 						},
 						_ => {
-							return false;
+							sb_panic!(program.line_number);
 						},
+					}
+				},
+				Keyphrase::FromMemory => {
+					if state.cached_keyphrase == Some(Keyphrase::WriteEntry) {
+						program.write_memory_value(state.cached_identifier.clone());
+						state.clear_cache();
+					} else {
+						sb_panic!(program.line_number);
 					}
 				},
 				Keyphrase::PublishSpellbookTo => {
@@ -348,23 +387,49 @@ fn execute_tokens(current: &Token, next: Option<&Token>, state: &mut ParserState
 							if bt == "console" {
 								state.cached_builtin = bt.to_string();
 							} else {
-								return false;
+								sb_panic!(program.line_number);
+							}
+						},
+						Token::Literal(lit) => {
+							match lit {
+								Variant::Str(string) => {
+									state.cached_literal = string.clone();
+								},
+								_ => {
+									sb_panic!(program.line_number);
+								},
 							}
 						},
 						Token::Identifier(ident) => {
 							state.cached_identifier = ident.to_string();
 						},
 						_ => {
-							return false;
+							sb_panic!(program.line_number);
 						},
 					}
 
 					if next.is_none() {
+						let not_console = &state.cached_builtin != "console";
 						program.publish(
-							if state.cached_identifier.is_empty() {
-								state.cached_builtin.clone()
-							} else { 
-								state.cached_identifier.clone()
+							not_console,
+							if !not_console {
+								String::new()
+							} else if !state.cached_literal.is_empty() {
+								state.cached_literal.clone()
+							} else {
+								match program.try_get_value(&state.cached_identifier) {
+									Some(val) => {
+										match val {
+											Variant::Str(string) => string,
+											_ => {
+												sb_panic!(program.line_number);
+											},
+										}
+									},
+									None => {
+										sb_panic!(program.line_number);
+									},
+								}
 							},
 							false,
 							String::new(),
@@ -381,11 +446,28 @@ fn execute_tokens(current: &Token, next: Option<&Token>, state: &mut ParserState
 						Token::Literal(lit) => {
 							match lit {
 								Variant::Str(st) => {
+									let not_console = &state.cached_builtin != "console";
 									program.publish(
-										if state.cached_identifier.is_empty() {
-											state.cached_builtin.clone()
-										} else { 
-											state.cached_identifier.clone()
+										not_console,
+										if !not_console {
+											String::new()
+										} else if !state.cached_literal.is_empty() {
+											state.cached_literal.clone()
+										} else {
+											match program.try_get_value(&state.cached_identifier) {
+												Some(val) => {
+													match val {
+														Variant::Str(string) => string,
+														_ => {
+															sb_panic!(program.line_number);
+														},
+													}
+												},
+												None => {
+													println!("{}", state.cached_identifier);
+													sb_panic!(program.line_number);
+												},
+											}
 										},
 										true,
 										st.to_string(),
@@ -394,12 +476,35 @@ fn execute_tokens(current: &Token, next: Option<&Token>, state: &mut ParserState
 									state.clear_cache();
 								},
 								_ => {
-									return false;
+									sb_panic!(program.line_number);
 								},
 							}
 						},
 						_ => {
-							return false;
+							sb_panic!(program.line_number);
+						},
+					}
+				},
+				Keyphrase::Memorize => {
+					match current {
+						Token::Identifier(ident) => {
+							match program.try_get_value(&ident) {
+								Some(val) => {
+									program.memorize_value(Some(val));
+								},
+								None => {
+									sb_panic!(program.line_number);
+								},
+							}
+
+							state.clear_cache();
+						},
+						Token::Literal(lit) => {
+							program.memorize_value(Some(lit.clone()));
+							state.clear_cache();
+						},
+						_ => {
+							sb_panic!(program.line_number);
 						},
 					}
 				},
@@ -409,8 +514,6 @@ fn execute_tokens(current: &Token, next: Option<&Token>, state: &mut ParserState
 
 		_ => {},
 	}
-
-	true
 }
 
 #[test]

@@ -1,3 +1,3 @@
 turn to chapter Incantations
 write entry hello with value "Hello, world!"
-publish spellbook to console
+publish spellbook to "test.txt"

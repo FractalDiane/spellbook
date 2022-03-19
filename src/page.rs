@@ -37,18 +37,19 @@ impl Page {
 		self.values[index].as_ref()
 	}
 
-	pub fn read_value_by_name(&self, name: &String) -> Option<&Variant> {
+	pub fn read_value_by_name(&self, name: &String) -> Option<Variant> {
 		for i in 0..3 {
 			if &self.entry_names[i] == name {
-				return self.values[i].as_ref();
+				return self.values[i].clone();
 			}
 		}
 
 		None
 	}
 
-	pub fn write_value(&mut self, value: Option<Variant>, index_override: bool, index: usize) {
-		let index = if index_override { index } else { self.write_index };
+	pub fn write_value(&mut self, name: String, value: Option<Variant>, index_override: bool, index: usize) {
+		let ind = if index_override { index } else { self.write_index };
+		self.entry_names[ind] = name;
 		match value {
 			Some(val) => {
 				let value_to_write = match self.page_type {
@@ -65,15 +66,16 @@ impl Page {
 						Variant::Str(val.to_string())
 					},
 					PageType::Routine => {
-						Variant::Routine(|v| {})
+						Variant::Routine(|_| {})
 					},
 				};
 
-				self.values[index] = Some(value_to_write);
+				self.values[ind] = Some(value_to_write);
 				self.write_index += 1;
 			},
 			None => {
-				self.values[index] = None;
+				self.entry_names[ind] = String::new();
+				self.values[ind] = None;
 			},
 		}
 	}
