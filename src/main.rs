@@ -42,6 +42,7 @@ pub struct Program {
 	memory: Option<Variant>,
 
 	line_number: usize,
+	exit: bool,
 }
 
 impl Program {
@@ -52,12 +53,26 @@ impl Program {
 		
 		Self{
 			pages,
+
 			current_page: 0,
 			turned_to_any_page: false,
+
 			drawer: Vec::<Page>::new(),
 			memory: None,
+
 			line_number: 1,
+			exit: false,
 		}
+	}
+
+	pub fn is_totally_empty(&self) -> bool {
+		!self.pages.iter().any(|p| p.has_any_contents())
+	}
+
+	fn can_write_to_page(&self, page_index: usize, name: &String) -> bool {
+		self.turned_to_any_page
+		&& !self.pages[page_index].entry_names.contains(name)
+		&& !self.pages[page_index].is_full()
 	}
 
 	pub fn turn_to_page(&mut self, page_index: usize) {
@@ -66,19 +81,49 @@ impl Program {
 	}
 
 	pub fn write_literal_value(&mut self, name: String, value: Option<Variant>) {
-		if !self.turned_to_any_page || self.pages[self.current_page].entry_names.contains(&name) {
+		if !self.can_write_to_page(self.current_page, &name) {
 			sb_panic!(self.line_number);
 		}
 
-		self.pages[self.current_page].write_value(name, value, false, 0);
+		if !self.pages[self.current_page].write_value(name, value, false, 0) {
+			sb_panic!(self.line_number);
+		}
+	}
+
+	pub fn write_input_value(&mut self, name: String) {
+		if !self.can_write_to_page(self.current_page, &name) {
+			sb_panic!(self.line_number);
+		}
+		
+		loop {
+			let mut input = String::with_capacity(10);
+			io::stdin().read_line(&mut input).unwrap_or_else(|_| sb_panic!(self.line_number));
+			let input_trimmed = input.trim_end(); 
+
+			let var = if let Ok(b) = input_trimmed.parse::<bool>() {
+				Variant::Boolean(b)
+			} else if let Ok(i) = input_trimmed.parse::<i64>() {
+				Variant::Integer(i)
+			} else if let Ok(f) = input_trimmed.parse::<f64>() {
+				Variant::Float(f)
+			} else {
+				Variant::Str(input_trimmed.to_string())
+			};
+
+			if self.pages[self.current_page].write_value(name.clone(), Some(var), false, 0) {
+				break;
+			}
+		}
 	}
 
 	pub fn write_memory_value(&mut self, name: String) {
-		if !self.turned_to_any_page || self.pages[self.current_page].entry_names.contains(&name) {
+		if !self.can_write_to_page(self.current_page, &name) {
 			sb_panic!(self.line_number);
 		}
 
-		self.pages[self.current_page].write_value(name, self.memory.clone(), false, 0);
+		if !self.pages[self.current_page].write_value(name, self.memory.clone(), false, 0) {
+			sb_panic!(self.line_number);
+		}
 	}
 
 	pub fn try_get_value(&self, name: &String) -> Option<Variant> {
@@ -102,7 +147,7 @@ impl Program {
 		}
 
 		let wrapup = if override_end { end } else {
-			if self.pages[PageType::Str as usize].has_any_contents() {
+			if self.pages[PageType::Str as usize].has_any_contents() || self.is_totally_empty() {
 				DEFAULT_WRAPUP.into()
 			} else {
 				DEFAULT_WRAPUP_QED.into()
@@ -124,19 +169,28 @@ impl Program {
 		}
 	}
 
-	pub fn tear_out_page(&mut self) {
+	pub fn tear_out_page(&mut self, put_in_drawer: bool) {
 		if !self.turned_to_any_page {
 			sb_panic!(self.line_number);
 		}
 
-		self.drawer.push(self.pages[self.current_page].clone());
+		if put_in_drawer {
+			self.drawer.push(self.pages[self.current_page].clone());
+		}
+		
 		self.pages[self.current_page].clear_page();
 	}
 
 	pub fn put_back_page(&mut self) {
+		if self.drawer.is_empty() {
+			sb_panic!(self.line_number);
+		}
+
 		let page = self.drawer.pop().unwrap();
 		for i in 0..3 {
-			self.pages[self.current_page].write_value(page.entry_names[i].clone(), page.values[i].clone(), true, i);
+			if !self.pages[self.current_page].write_value(page.entry_names[i].clone(), page.values[i].clone(), true, i) {
+				sb_panic!(self.line_number);
+			}
 		}
 	}
 
@@ -200,7 +254,7 @@ impl Program {
 }
 
 fn main() {
-	/*panic::set_hook(Box::new(|info| {
+	panic::set_hook(Box::new(|info| {
 		let mut rng = thread_rng();
 		let index: usize = rng.gen_range(0..10);
 		let message = ERROR_MESSAGES[index];
@@ -209,7 +263,7 @@ fn main() {
 		} else {
 			eprintln!("\x1b[0;91mCatastrophe!\x1b[0m\n{}", message);
 		}
-	}));*/
+	}));
 
 	let mut args = env::args();
 	if args.len() != 2 {
@@ -233,6 +287,9 @@ fn main() {
 					};
 			
 					parser::execute_token_vector(&mut program, tokenized);
+					if program.exit {
+						return;
+					}
 				}
 			},
 			Err(_) => {},

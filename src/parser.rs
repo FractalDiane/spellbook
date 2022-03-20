@@ -7,17 +7,18 @@ use peekmore::{PeekMore, PeekMoreIterator};
 
 use crate::variant::Variant;
 use crate::Program;
-use crate::page::PageType;
 use crate::sb_panic;
+use crate::constants::*;
 
 use std::slice::Iter;
 
 #[derive(Debug, PartialEq, Clone)]
 pub enum Keyphrase {
 	TurnToChapter,
-	TearOutChapter,
+	TearOutThisChapter,
 	AndPutItInTheDrawer,
 	AndThrowItInTheTrash,
+	TakeOutAChapterFromTheDrawerAndPutItBack,
 
 	WriteEntry,
 	WithValue,
@@ -31,6 +32,8 @@ pub enum Keyphrase {
 
 	PublishSpellbookTo,
 	WrappedUpWith,
+
+	ThrowSpellbookInTheTrash,
 }
 
 #[derive(Debug, PartialEq, Clone)]
@@ -39,7 +42,20 @@ pub enum Token {
 	Literal(Variant),
 	Identifier(String),
 	Builtin(String),
-	Operator(String),
+
+	Conditional,
+	Operator(Operator),
+}
+
+#[derive(Debug, PartialEq, Clone)]
+pub enum Operator {
+	Sum,
+	Difference,
+	Product,
+	Quotient,
+	Remainder,
+	Concatenation,
+	And,
 }
 
 const fn parse_escape_character(chr: char) -> Option<char> {
@@ -94,7 +110,7 @@ fn split_line_with_quotes(line: String) -> Vec<String> {
 fn expect_subtokens(iter: &mut PeekMoreIterator<Iter<&str>>, subtokens: &[&str]) -> bool {
 	let mut index = 0;
 	for st in subtokens {
-		if let Some(item) = iter.peek_forward(index) {
+		if let Some(item) = iter.peek_nth(index) {
 			if st != *item {
 				return false;
 			}
@@ -125,11 +141,17 @@ pub fn tokenize_line(line: String) -> Option<Vec<Token>> {
 				}
 			},
 			"tear" => {
-				if expect_subtokens(&mut subtokens, &["out", "chapter"]) {
-					let token = Token::Keyphrase(Keyphrase::TearOutChapter);
+				if expect_subtokens(&mut subtokens, &["out", "this", "chapter"]) {
+					let token = Token::Keyphrase(Keyphrase::TearOutThisChapter);
 					tokens.push(token);
 				} else {
 					return None;
+				}
+			},
+			"take" => {
+				if expect_subtokens(&mut subtokens, &["out", "a", "chapter", "from", "the", "drawer", "and", "put", "it", "back"]) {
+					let token = Token::Keyphrase(Keyphrase::TakeOutAChapterFromTheDrawerAndPutItBack);
+					tokens.push(token);
 				}
 			},
 			"write" => {
@@ -151,7 +173,8 @@ pub fn tokenize_line(line: String) -> Option<Vec<Token>> {
 							let token = Token::Keyphrase(Keyphrase::WithTheValueOf);
 							tokens.push(token);
 						} else {
-							return None;
+							let token = Token::Keyphrase(Keyphrase::WithThe);
+							tokens.push(token);
 						}
 					},
 					_ => {
@@ -179,17 +202,17 @@ pub fn tokenize_line(line: String) -> Option<Vec<Token>> {
 				}
 			},
 			"and" => {
-				match subtokens.next() {
-					Some(&"put") => {
-						if expect_subtokens(&mut subtokens, &["it", "in", "the", "drawer"]) {
+				match subtokens.peek() {
+					Some(&&"put") => {
+						if expect_subtokens(&mut subtokens, &["put", "it", "in", "the", "drawer"]) {
 							let token = Token::Keyphrase(Keyphrase::AndPutItInTheDrawer);
 							tokens.push(token);
 						} else {
 							return None;
 						}
 					},
-					Some(&"throw") => {
-						if expect_subtokens(&mut subtokens, &["it", "in", "the", "trash"]) {
+					Some(&&"throw") => {
+						if expect_subtokens(&mut subtokens, &["throw", "it", "in", "the", "trash"]) {
 							let token = Token::Keyphrase(Keyphrase::AndThrowItInTheTrash);
 							tokens.push(token);
 						} else {
@@ -197,10 +220,11 @@ pub fn tokenize_line(line: String) -> Option<Vec<Token>> {
 						}
 					},
 					_ => {
-						return None;
+						let token = Token::Operator(Operator::And);
+						tokens.push(token);
 					},
 				}
-			}
+			},
 			"wrapped" => {
 				if expect_subtokens(&mut subtokens, &["up", "with"]) {
 					let token = Token::Keyphrase(Keyphrase::WrappedUpWith);
@@ -213,14 +237,59 @@ pub fn tokenize_line(line: String) -> Option<Vec<Token>> {
 				let token = Token::Keyphrase(Keyphrase::Memorize);
 				tokens.push(token);
 			},
+			"throw" => {
+				if expect_subtokens(&mut subtokens, &["spellbook", "in", "the", "trash"]) {
+					let token = Token::Keyphrase(Keyphrase::ThrowSpellbookInTheTrash);
+					tokens.push(token);
+				}
+			},
 
-			"Presages" | "Hexes" | "Illusions" | "Incantations" | "Recipes" |
-			"console" => {
-				tokens.push(Token::Builtin(st.to_string()));
+			"if" => {
+				let token = Token::Conditional;
+				tokens.push(token);
+			},
+
+			"sum" => {
+				if expect_subtokens(&mut subtokens, &["of"]) {
+					let token = Token::Operator(Operator::Sum);
+					tokens.push(token);
+				}
+			},
+			"difference" => {
+				if expect_subtokens(&mut subtokens, &["of"]) {
+					let token = Token::Operator(Operator::Difference);
+					tokens.push(token);
+				}
+			},
+			"product" => {
+				if expect_subtokens(&mut subtokens, &["of"]) {
+					let token = Token::Operator(Operator::Product);
+					tokens.push(token);
+				}
+			},
+			"quotient" => {
+				if expect_subtokens(&mut subtokens, &["of"]) {
+					let token = Token::Operator(Operator::Quotient);
+					tokens.push(token);
+				}
+			},
+			"remainder" => {
+				if expect_subtokens(&mut subtokens, &["of"]) {
+					let token = Token::Operator(Operator::Remainder);
+					tokens.push(token);
+				}
+			},
+			"concatenation" => {
+				if expect_subtokens(&mut subtokens, &["of"]) {
+					let token = Token::Operator(Operator::Concatenation);
+					tokens.push(token);
+				}
 			},
 
 			_ => {
-				if let Ok(int) = st.parse::<i64>() {
+				if BUILTINS_CHAPTERS.contains(st) || BUILTINS_MISC.contains(st) {
+					tokens.push(Token::Builtin(st.to_string()));
+				} else if let Ok(int) = st.parse::<i64>() {
 					let token = Token::Literal(Variant::Integer(int));
 					tokens.push(token);
 				} else if let Ok(float) = st.parse::<f64>() {
@@ -247,7 +316,7 @@ pub fn tokenize_line(line: String) -> Option<Vec<Token>> {
 enum ParseStateStatus {
 	Top,
 	Keyphrase(Keyphrase),
-	Operation,
+	Operation(Operator),
 }
 
 struct ParserState {
@@ -256,6 +325,7 @@ struct ParserState {
 	cached_identifier: String,
 	cached_builtin: String,
 	cached_literal: String,
+	cached_operand_list: Vec<Variant>,
 }
 
 impl ParserState {
@@ -266,6 +336,7 @@ impl ParserState {
 			cached_identifier: String::with_capacity(20),
 			cached_builtin: String::with_capacity(20),
 			cached_literal: String::with_capacity(20),
+			cached_operand_list: Vec::<Variant>::with_capacity(5),
 		}
 	}
 
@@ -274,6 +345,7 @@ impl ParserState {
 		self.cached_identifier.clear();
 		self.cached_builtin.clear();
 		self.cached_literal.clear();
+		self.cached_operand_list.clear();
 		self.status = ParseStateStatus::Top;
 	}
 
@@ -282,30 +354,83 @@ impl ParserState {
 		&& self.cached_identifier.is_empty()
 		&& self.cached_builtin.is_empty()
 		&& self.cached_literal.is_empty()
+		&& self.cached_operand_list.is_empty()
 		&& self.status == ParseStateStatus::Top
+	}
+
+	pub fn perform_operation(&self, operation: &Operator) -> Option<Variant> {
+		if self.cached_operand_list.len() < 1 {
+			return None;
+		}
+
+		if let Some(mut result) = match operation {
+			Operator::Sum => self.cached_operand_list[0].add(self.cached_operand_list[1].clone()),
+			Operator::Difference => self.cached_operand_list[0].sub(self.cached_operand_list[1].clone()),
+			Operator::Product => self.cached_operand_list[0].mul(self.cached_operand_list[1].clone()),
+			Operator::Quotient => self.cached_operand_list[0].div(self.cached_operand_list[1].clone()),
+			Operator::Remainder => self.cached_operand_list[0].rem(self.cached_operand_list[1].clone()),
+			Operator::Concatenation => self.cached_operand_list[0].concat(self.cached_operand_list[1].clone()),
+			_ => {
+				return None;
+			}
+		} {
+			let mut index = 2;
+			while index < self.cached_operand_list.len() {
+				result = match match operation {
+					Operator::Sum => result.add(self.cached_operand_list[index].clone()),
+					Operator::Difference => result.sub(self.cached_operand_list[index].clone()),
+					Operator::Product => result.mul(self.cached_operand_list[index].clone()),
+					Operator::Quotient => result.div(self.cached_operand_list[index].clone()),
+					Operator::Remainder => result.rem(self.cached_operand_list[index].clone()),
+					Operator::Concatenation => result.concat(self.cached_operand_list[index].clone()),
+					_ => {
+						return None;
+					},
+				} {
+					Some(r) => r,
+					None => {
+						return None;
+					},
+				};
+
+				index += 1;
+			}
+
+			Some(result)
+		} else {
+			None
+		}
 	}
 }
 
 pub fn execute_token_vector(program: &mut Program, tokens: Vec<Token>) {
 	println!("{:?}", tokens);
 	let mut state = ParserState::new();
-	let mut prev_iter = tokens.iter();
-	prev_iter.next().unwrap();
-	for (current, next) in tokens.iter().zip(prev_iter) {
-		execute_tokens(current, Some(next), &mut state, program);
-	}
 
-	while !state.is_cache_clear() {
-		execute_tokens(tokens.as_slice().last().unwrap(), None, &mut state, program);
+	if tokens.len() > 1 {
+		let mut prev_iter = tokens.iter();
+		prev_iter.next().unwrap();
+		for (current, next) in tokens.iter().zip(prev_iter) {
+			execute_tokens(current, Some(next), &mut state, program, false);
+		}
+
+		while !state.is_cache_clear() {
+			execute_tokens(tokens.as_slice().last().unwrap(), None, &mut state, program, false);
+		}
+	} else {
+		execute_tokens(&tokens[0], None, &mut state, program, true);
 	}
 }
 
-fn execute_tokens(current: &Token, next: Option<&Token>, state: &mut ParserState, program: &mut Program) {
-	match state.status {
+fn execute_tokens(current: &Token, next: Option<&Token>, state: &mut ParserState, program: &mut Program, single_token: bool) {
+	match &state.status {
 		ParseStateStatus::Top => {
 			match current {
 				Token::Keyphrase(kp) => {
 					state.status = ParseStateStatus::Keyphrase(kp.clone());
+					if single_token {
+						execute_tokens(current, next, state, program, true);
+					}
 				},
 				_ => {
 					sb_panic!(program.line_number);
@@ -318,25 +443,13 @@ fn execute_tokens(current: &Token, next: Option<&Token>, state: &mut ParserState
 				Keyphrase::TurnToChapter => {
 					match current {
 						Token::Builtin(chapter) => {
-							match chapter.as_str() {
-								"Presages" => {
-									program.turn_to_page(PageType::Boolean as usize);
+							match BUILTINS_CHAPTERS.iter().position(|&s| s == chapter) {
+								Some(index) => {
+									program.turn_to_page(index);
 								},
-								"Hexes" => {
-									program.turn_to_page(PageType::Integer as usize);
-								},
-								"Illusions" => {
-									program.turn_to_page(PageType::Float as usize);
-								},
-								"Incantations" => {
-									program.turn_to_page(PageType::Str as usize);
-								},
-								"Recipes" => {
-									program.turn_to_page(PageType::Routine as usize);
-								},
-								_ => {
+								None => {
 									sb_panic!(program.line_number);
-								},
+								}
 							}
 
 							state.clear_cache();
@@ -373,6 +486,16 @@ fn execute_tokens(current: &Token, next: Option<&Token>, state: &mut ParserState
 						},
 					}
 				},
+				Keyphrase::WithThe => {
+					match current {
+						Token::Operator(op) => {
+							state.status = ParseStateStatus::Operation(op.clone());
+						},
+						_ => {
+							sb_panic!(program.line_number);
+						},
+					}
+				},
 				Keyphrase::FromMemory => {
 					if state.cached_keyphrase == Some(Keyphrase::WriteEntry) {
 						program.write_memory_value(state.cached_identifier.clone());
@@ -380,6 +503,38 @@ fn execute_tokens(current: &Token, next: Option<&Token>, state: &mut ParserState
 					} else {
 						sb_panic!(program.line_number);
 					}
+				},
+				Keyphrase::FromDivineIntervention => {
+					if state.cached_keyphrase == Some(Keyphrase::WriteEntry) {
+						program.write_input_value(state.cached_identifier.clone());
+						state.clear_cache();
+					} else {
+						sb_panic!(program.line_number);
+					}
+				},
+				Keyphrase::TearOutThisChapter => {
+					state.cached_keyphrase = Some(Keyphrase::TearOutThisChapter);
+					state.status = ParseStateStatus::Top;
+				},
+				Keyphrase::AndThrowItInTheTrash => {
+					if state.cached_keyphrase == Some(Keyphrase::TearOutThisChapter) {
+						program.tear_out_page(false);
+						state.clear_cache();
+					} else {
+						sb_panic!(program.line_number);
+					}
+				},
+				Keyphrase::AndPutItInTheDrawer => {
+					if state.cached_keyphrase == Some(Keyphrase::TearOutThisChapter) {
+						program.tear_out_page(true);
+						state.clear_cache();
+					} else {
+						sb_panic!(program.line_number);
+					}
+				},
+				Keyphrase::TakeOutAChapterFromTheDrawerAndPutItBack => {
+					program.put_back_page();
+					state.clear_cache();
 				},
 				Keyphrase::PublishSpellbookTo => {
 					match current {
@@ -508,11 +663,56 @@ fn execute_tokens(current: &Token, next: Option<&Token>, state: &mut ParserState
 						},
 					}
 				},
+				Keyphrase::ThrowSpellbookInTheTrash => {
+					program.exit = true;
+					state.clear_cache();
+				},
 				_ => {},
 			}
 		},
+		
+		ParseStateStatus::Operation(operator) => {
+			let operand = match current {
+				Token::Identifier(ident) => {
+					match program.try_get_value(&ident) {
+						Some(val) => val,
+						None => {
+							sb_panic!(program.line_number);
+						},
+					}
+				},
+				Token::Literal(lit) => {
+					lit.clone()
+				},
+				Token::Operator(op) => {
+					match op {
+						Operator::And => {
+							return;
+						},
+						_ => {
+							sb_panic!(program.line_number);
+						},
+					}
+				},
+				_ => {
+					sb_panic!(program.line_number);
+				}
+			};
 
-		_ => {},
+			state.cached_operand_list.push(operand);
+
+			if next.is_none() {
+				match state.perform_operation(&operator) {
+					Some(result) => {
+						program.write_literal_value(state.cached_identifier.clone(), Some(result));
+						state.clear_cache();
+					},
+					None => {
+						sb_panic!(program.line_number);
+					}
+				}
+			}
+		},
 	}
 }
 
@@ -553,4 +753,25 @@ fn test_tokenize() {
 		T::Keyphrase(K::WithValue),
 		T::Literal(Variant::Integer(5)),
 	]));
+}
+
+#[test]
+fn test_operations() {
+	type V = Variant;
+
+	let mut state = ParserState::new();
+	state.cached_operand_list = vec![V::Integer(5), V::Integer(3)];
+	assert_eq!(state.perform_operation(&Operator::Sum), Some(V::Integer(8)));
+	state.cached_operand_list = vec![V::Integer(5), V::Integer(3), V::Integer(17)];
+	assert_eq!(state.perform_operation(&Operator::Sum), Some(V::Integer(25)));
+	state.cached_operand_list = vec![V::Integer(5), V::Integer(3), V::Float(12.7)];
+	assert_eq!(state.perform_operation(&Operator::Sum), None);
+
+	state.cached_operand_list = vec![V::Integer(32), V::Integer(8), V::Integer(8)];
+	assert_eq!(state.perform_operation(&Operator::Difference), Some(V::Integer(16)));
+	state.cached_operand_list = vec![V::Integer(5), V::Integer(60)];
+	assert_eq!(state.perform_operation(&Operator::Difference), Some(V::Integer(-55)));
+
+	state.cached_operand_list = vec![V::Str("Hello ".into()), V::Str("there".into())];
+	assert_eq!(state.perform_operation(&Operator::Concatenation), Some(V::Str("Hello there".into())));
 }

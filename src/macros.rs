@@ -6,7 +6,6 @@
 #[macro_export]
 macro_rules! sb_panic {
 	($line:expr) => {
-		//std::panic::panic_any($line);
-		panic!();
+		std::panic::panic_any($line);
 	};
 }

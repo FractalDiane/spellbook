@@ -3,6 +3,18 @@
 //           BY DIANE SPARKS
 // *~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*
 
+pub const BUILTINS_CHAPTERS: [&'static str; 5] = [
+	"Presages",
+	"Hexes",
+	"Illusions",
+	"Incantations",
+	"Recipes",
+];
+
+pub const BUILTINS_MISC: [&'static str; 1] = [
+	"console",
+];
+
 pub const ERROR_MESSAGES: [&'static str; 12] = [
 	"You accidentally transformed yourself into a cute, fluffy demon.",
 	"The spell ricocheted off the wall and knocked everything off your desk.",
