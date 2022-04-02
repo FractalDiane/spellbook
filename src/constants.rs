@@ -11,6 +11,19 @@ pub const BUILTINS_CHAPTERS: [&'static str; 5] = [
 	"Recipes",
 ];
 
+pub const BUILTINS_SPELLS: [&'static str; 4] = [
+	"Coadjuvancy",
+	"Redesign",
+	"Stoachastize",
+	"Entwine",
+];
+
+pub const BUILTINS_ORDINALS: [&'static str; 3] = [
+	"first",
+	"second",
+	"third",
+];
+
 pub const BUILTINS_MISC: [&'static str; 1] = [
 	"console",
 ];

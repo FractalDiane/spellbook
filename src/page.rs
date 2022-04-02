@@ -18,6 +18,7 @@ pub enum PageType {
 pub struct Page {
 	pub entry_names: [String; 3],
 	pub values: [Option<Variant>; 3],
+	pub signature: String,
 
 	page_type: PageType,
 	write_index: usize,
@@ -28,6 +29,7 @@ impl Page {
 		Self{
 			entry_names: [String::with_capacity(10), String::with_capacity(10), String::with_capacity(10)],
 			values: [None, None, None],
+			signature: String::new(),
 			page_type,
 			write_index: 0,
 		}

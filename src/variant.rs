@@ -104,6 +104,8 @@ impl Variant {
 			Some(Variant::Integer(left + right))
 		} else if let (Some(left), Some(right)) = (self.try_unwrap_float(), rhs.try_unwrap_float()) {
 			Some(Variant::Float(left + right))
+		} else if let (Some(left), Some(right)) = (self.try_unwrap_string(), rhs.try_unwrap_string()) {
+			Some(Variant::Str(left + &right))
 		} else {
 			None
 		}

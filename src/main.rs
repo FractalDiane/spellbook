@@ -7,12 +7,14 @@
 
 extern crate rand;
 extern crate peekmore;
+mod cauldron;
 mod constants;
 mod macros;
 mod page;
 mod parser;
 mod variant;
 
+use cauldron::*;
 use page::*;
 use variant::Variant;
 use constants::*;
@@ -34,12 +36,17 @@ fn forget_chance(x: usize) -> f64 {
 
 pub struct Program {
 	pages: [Page; 5],
+	cauldron: Cauldron,
 
 	current_page: usize,
 	turned_to_any_page: bool,
 
 	drawer: Vec<Page>,
+	floor: Option<Page>,
 	memory: Option<Variant>,
+
+	custom_signature: String,
+	use_custom_signature: bool,
 
 	line_number: usize,
 	exit: bool,
@@ -53,15 +60,35 @@ impl Program {
 		
 		Self{
 			pages,
+			cauldron: Cauldron::new(),
 
 			current_page: 0,
 			turned_to_any_page: false,
 
 			drawer: Vec::<Page>::new(),
+			floor: None,
 			memory: None,
+
+			custom_signature: String::new(),
+			use_custom_signature: false,
 
 			line_number: 1,
 			exit: false,
+		}
+	}
+
+	pub fn change_line_by(&mut self, by: &Variant) {
+		match by {
+			Variant::Integer(int) => {
+				if *int >= 0 {
+					self.line_number += *int as usize;
+				} else {
+					self.line_number -= -*int as usize;
+				}
+			},
+			_ => {
+				sb_panic!(self.line_number);
+			}
 		}
 	}
 
@@ -80,6 +107,11 @@ impl Program {
 		self.turned_to_any_page = true;
 	}
 
+	pub fn set_signature(&mut self, signature: String) {
+		self.custom_signature = signature;
+		self.use_custom_signature = true;
+	}
+
 	pub fn write_literal_value(&mut self, name: String, value: Option<Variant>) {
 		if !self.can_write_to_page(self.current_page, &name) {
 			sb_panic!(self.line_number);
@@ -90,6 +122,7 @@ impl Program {
 		}
 	}
 
+	/*
 	pub fn write_input_value(&mut self, name: String) {
 		if !self.can_write_to_page(self.current_page, &name) {
 			sb_panic!(self.line_number);
@@ -115,6 +148,7 @@ impl Program {
 			}
 		}
 	}
+	*/
 
 	pub fn write_memory_value(&mut self, name: String) {
 		if !self.can_write_to_page(self.current_page, &name) {
@@ -126,11 +160,29 @@ impl Program {
 		}
 	}
 
+	pub fn get_value_by_index(&self, index: usize) -> Option<Variant> {
+		self.pages[self.current_page].values[index].clone()
+	}
+
 	pub fn try_get_value(&self, name: &String) -> Option<Variant> {
 		self.pages[self.current_page].read_value_by_name(&name)
 	}
 
-	pub fn publish(&self, not_console: bool, target: String, override_end: bool, end: String) {
+	pub fn cast_cauldron_spell(&mut self, spell: &CauldronSpell) {
+		if !self.turned_to_any_page {
+			sb_panic!(self.line_number);
+		}
+
+		if !self.cauldron.cast_spell(spell) {
+			sb_panic!(self.line_number);
+		}
+	}
+
+	pub fn knock_over_cauldron(&mut self) {
+		self.floor = self.cauldron.knock_over();
+	}
+
+	pub fn publish(&self, not_console: bool, target: String) {
 		let mut output = String::with_capacity(100);
 		for p in 0..5 {
 			for v in 0..3 {
@@ -144,9 +196,11 @@ impl Program {
 					output.push('\n');
 				}
 			}
+
+			output.push_str(&self.pages[p].signature);
 		}
 
-		let wrapup = if override_end { end } else {
+		let signature = if self.use_custom_signature { self.custom_signature.clone() } else {
 			if self.pages[PageType::Str as usize].has_any_contents() || self.is_totally_empty() {
 				DEFAULT_WRAPUP.into()
 			} else {
@@ -155,7 +209,7 @@ impl Program {
 		};
 
 		if !not_console {
-			print!("{}{}", output, wrapup);
+			print!("{}{}", output, signature);
 			io::stdout().flush().unwrap_or_else(|_| sb_panic!(self.line_number));
 		} else {
 			let mut outfile = OpenOptions::new()
@@ -165,11 +219,11 @@ impl Program {
 				.open(&target)
 				.unwrap_or_else(|_| sb_panic!(self.line_number));
 
-			write!(outfile, "{}{}", output, wrapup).unwrap_or_else(|_| sb_panic!(self.line_number));
+			write!(outfile, "{}{}", output, signature).unwrap_or_else(|_| sb_panic!(self.line_number));
 		}
 	}
 
-	pub fn tear_out_page(&mut self, put_in_drawer: bool) {
+	pub fn tear_out_page(&mut self, put_in_drawer: bool, put_in_cauldron: bool) {
 		if !self.turned_to_any_page {
 			sb_panic!(self.line_number);
 		}
@@ -177,21 +231,63 @@ impl Program {
 		if put_in_drawer {
 			self.drawer.push(self.pages[self.current_page].clone());
 		}
+
+		if put_in_cauldron {
+			if !self.cauldron.add_page(&self.pages[self.current_page]) {
+				sb_panic!(self.line_number);
+			}
+		}
 		
 		self.pages[self.current_page].clear_page();
 	}
 
-	pub fn put_back_page(&mut self) {
-		if self.drawer.is_empty() {
+	pub fn put_back_page(&mut self, from_drawer: bool) {
+		if !self.turned_to_any_page {
 			sb_panic!(self.line_number);
 		}
 
-		let page = self.drawer.pop().unwrap();
+		let page = if from_drawer {
+			match self.drawer.pop() {
+				Some(ref pg) => pg.clone(),
+				None => {
+					sb_panic!(self.line_number);
+				},
+			}
+		} else {
+			match &self.floor {
+				Some(pg) => pg.clone(),
+				None => {
+					sb_panic!(self.line_number);
+				}
+			}
+		};
+		
 		for i in 0..3 {
 			if !self.pages[self.current_page].write_value(page.entry_names[i].clone(), page.values[i].clone(), true, i) {
 				sb_panic!(self.line_number);
 			}
 		}
+		/*if from_drawer {
+			if self.drawer.is_empty() {
+				sb_panic!(self.line_number);
+			}
+	
+			let page = self.drawer.pop().unwrap();
+			for i in 0..3 {
+				if !self.pages[self.current_page].write_value(page.entry_names[i].clone(), page.values[i].clone(), true, i) {
+					sb_panic!(self.line_number);
+				}
+			}
+		} else {
+			match self.floor {
+				Some(pg) => {
+
+				},
+				None => {
+					sb_panic!(self.line_number);
+				}
+			}
+		}*/
 	}
 
 	pub fn memorize_value(&mut self, value: Option<Variant>) {
@@ -254,7 +350,7 @@ impl Program {
 }
 
 fn main() {
-	panic::set_hook(Box::new(|info| {
+	/*panic::set_hook(Box::new(|info| {
 		let mut rng = thread_rng();
 		let index: usize = rng.gen_range(0..10);
 		let message = ERROR_MESSAGES[index];
@@ -263,7 +359,7 @@ fn main() {
 		} else {
 			eprintln!("\x1b[0;91mCatastrophe!\x1b[0m\n{}", message);
 		}
-	}));
+	}));*/
 
 	let mut args = env::args();
 	if args.len() != 2 {
@@ -275,26 +371,37 @@ fn main() {
 	let infile = File::open(&path).unwrap();
 
 	let mut program = Program::new();
+	let mut code = vec![];
 	for line in io::BufReader::new(infile).lines() {
 		match line {
 			Ok(ln) => {
-				if !ln.trim().is_empty() {
-					let tokenized = match parser::tokenize_line(ln) {
-						Some(vec) => vec,
-						None => {
-							sb_panic!(program.line_number);
-						},
-					};
-			
-					parser::execute_token_vector(&mut program, tokenized);
-					if program.exit {
-						return;
-					}
-				}
+				code.push(ln);
 			},
 			Err(_) => {},
 		}
+	}
 
+	while program.line_number <= code.len() {
+		if !code[program.line_number - 1].trim().is_empty() {
+			let tokenized = match parser::tokenize_line(code[program.line_number - 1].clone()) {
+				Some(vec) => vec,
+				None => {
+					sb_panic!(program.line_number);
+				},
+			};
+
+			if !tokenized.is_empty() {
+				parser::execute_token_vector(&mut program, tokenized);
+				if program.exit {
+					return;
+				}
+			}
+		}
+
+		if program.line_number < 1 || program.line_number > code.len() {
+			sb_panic!(program.line_number);
+		}
+		
 		program.line_number += 1;
 	}
 }
