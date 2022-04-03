@@ -5,7 +5,7 @@
 
 use crate::variant::Variant;
 
-#[derive(Clone)]
+#[derive(Clone, PartialEq)]
 pub enum PageType {
 	Boolean,
 	Integer,
@@ -20,7 +20,7 @@ pub struct Page {
 	pub values: [Option<Variant>; 3],
 	pub signature: String,
 
-	page_type: PageType,
+	pub page_type: PageType,
 	write_index: usize,
 }
 

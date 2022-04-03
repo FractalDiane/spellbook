@@ -49,7 +49,7 @@ pub enum Keyphrase {
 	SignAcknowledgementsPageWith,
 	//WrappedUpWith,
 
-	ThrowSpellbookInTheTrash,
+	SlamSpellbookShut,
 }
 
 #[derive(Debug, PartialEq, Clone)]
@@ -328,13 +328,14 @@ pub fn tokenize_line(line: String) -> Option<Vec<Token>> {
 				let token = Token::Keyphrase(Keyphrase::Memorize);
 				tokens.push(token);
 			},
-			"throw" => {
-				if expect_subtokens(&mut subtokens, &["spellbook", "in", "the", "trash"]) {
-					let token = Token::Keyphrase(Keyphrase::ThrowSpellbookInTheTrash);
+			"slam" => {
+				if expect_subtokens(&mut subtokens, &["spellbook", "shut"]) {
+					let token = Token::Keyphrase(Keyphrase::SlamSpellbookShut);
 					tokens.push(token);
+				} else {
+					return None;
 				}
 			},
-
 			"if" => {
 				let token = Token::Conditional;
 				tokens.push(token);
@@ -758,7 +759,7 @@ fn execute_tokens(current: &Token, next: Option<&Token>, state: &mut ParserState
 						},
 					}
 				},
-				Keyphrase::ThrowSpellbookInTheTrash => {
+				Keyphrase::SlamSpellbookShut => {
 					program.exit = true;
 					state.clear_cache();
 				},

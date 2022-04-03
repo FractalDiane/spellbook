@@ -26,6 +26,10 @@ lazy_static! {
 			"Entwine" => CauldronSpell::Entwine,
 			"Stoachastize" => CauldronSpell::Stoachastize,
 			"Redesign" => CauldronSpell::Redesign,
+
+			"Reverberate" => CauldronSpell::Reverberate,
+			"Amplify" => CauldronSpell::Amplify,
+			"Squelch" => CauldronSpell::Squelch,
 		}
 	};
 }

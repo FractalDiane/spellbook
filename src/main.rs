@@ -36,6 +36,8 @@ pub struct Program {
 	pages: [Page; 5],
 	cauldron: Cauldron,
 
+	spell_line_stack: Vec<usize>,
+
 	current_page: usize,
 	turned_to_any_page: bool,
 
@@ -59,6 +61,8 @@ impl Program {
 		Self{
 			pages,
 			cauldron: Cauldron::new(),
+
+			spell_line_stack: vec![],
 
 			current_page: 0,
 			turned_to_any_page: false,
@@ -120,34 +124,6 @@ impl Program {
 		}
 	}
 
-	/*
-	pub fn write_input_value(&mut self, name: String) {
-		if !self.can_write_to_page(self.current_page, &name) {
-			sb_panic!(self.line_number);
-		}
-		
-		loop {
-			let mut input = String::with_capacity(10);
-			io::stdin().read_line(&mut input).unwrap_or_else(|_| sb_panic!(self.line_number));
-			let input_trimmed = input.trim_end(); 
-
-			let var = if let Ok(b) = input_trimmed.parse::<bool>() {
-				Variant::Boolean(b)
-			} else if let Ok(i) = input_trimmed.parse::<i64>() {
-				Variant::Integer(i)
-			} else if let Ok(f) = input_trimmed.parse::<f64>() {
-				Variant::Float(f)
-			} else {
-				Variant::Str(input_trimmed.to_string())
-			};
-
-			if self.pages[self.current_page].write_value(name.clone(), Some(var), false, 0) {
-				break;
-			}
-		}
-	}
-	*/
-
 	pub fn write_memory_value(&mut self, name: String) {
 		if !self.can_write_to_page(self.current_page, &name) {
 			sb_panic!(self.line_number);
@@ -171,9 +147,39 @@ impl Program {
 			sb_panic!(self.line_number);
 		}
 
-		if !self.cauldron.cast_spell(spell) {
-			sb_panic!(self.line_number);
+		match self.cauldron.cast_spell(spell) {
+			Some(CauldronSpellResult::DoNothing) => {},
+			Some(CauldronSpellResult::SkipLine) => {
+				self.spell_line_stack.push(self.line_number);
+				self.cauldron.increase_charge(false, 0);
+				self.line_number += 1;
+				return;
+			},
+			Some(CauldronSpellResult::JumpBack(charge)) => {
+				let result = charge - self.spell_line_stack.len() + 1;
+				let index = self.spell_line_stack.len() - result;
+				self.line_number = match self.spell_line_stack.get(index) {
+					Some(line) => *line - 1,
+					None => {
+						sb_panic!(self.line_number);
+					}
+				};
+
+				for _ in 0..result {
+					self.spell_line_stack.pop();
+				}
+
+				self.cauldron.decrease_charge(true, result);
+				return;
+			},
+
+			None => {
+				sb_panic!(self.line_number);
+			},
 		}
+
+		self.spell_line_stack.push(self.line_number);
+		self.cauldron.increase_charge(false, 0);
 	}
 
 	pub fn knock_over_cauldron(&mut self) {
@@ -265,27 +271,6 @@ impl Program {
 				sb_panic!(self.line_number);
 			}
 		}
-		/*if from_drawer {
-			if self.drawer.is_empty() {
-				sb_panic!(self.line_number);
-			}
-	
-			let page = self.drawer.pop().unwrap();
-			for i in 0..3 {
-				if !self.pages[self.current_page].write_value(page.entry_names[i].clone(), page.values[i].clone(), true, i) {
-					sb_panic!(self.line_number);
-				}
-			}
-		} else {
-			match self.floor {
-				Some(pg) => {
-
-				},
-				None => {
-					sb_panic!(self.line_number);
-				}
-			}
-		}*/
 	}
 
 	pub fn memorize_value(&mut self, value: Option<Variant>) {

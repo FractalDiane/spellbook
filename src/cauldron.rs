@@ -4,7 +4,7 @@
 // *~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*
 
 use crate::variant::Variant;
-use crate::page::Page;
+use crate::page::*;
 use std::io;
 
 #[derive(Debug, Clone)]
@@ -15,17 +15,44 @@ pub enum CauldronSpell {
 	Redesign,
 	Judgement,
 	Antipodize,
+
+	Reverberate,
+	Amplify,
+	Squelch,
+}
+
+pub enum CauldronSpellResult {
+	DoNothing,
+	SkipLine,
+	JumpBack(usize),
 }
 
 pub struct Cauldron {
 	page: Option<Page>,
+	spell_charge: usize,
+	spell_charge_amplifier: usize,
 }
 
 impl Cauldron {
 	pub fn new() -> Self {
 		Self{
 			page: None,
+			spell_charge: 0,
+			spell_charge_amplifier: 1,
 		}
+	}
+
+	pub fn increase_charge(&mut self, override_amount: bool, amount: usize) {
+		self.spell_charge += if override_amount { amount } else { self.spell_charge_amplifier };
+	}
+
+	pub fn decrease_charge(&mut self, override_amount: bool, amount: usize) {
+		self.spell_charge -= if override_amount { amount } else { self.spell_charge_amplifier };
+	}
+
+	pub fn reset_charge(&mut self) {
+		self.spell_charge = 0;
+		self.spell_charge_amplifier = 1;
 	}
 
 	pub fn add_page(&mut self, page: &Page) -> bool {
@@ -66,19 +93,19 @@ impl Cauldron {
 		page
 	}
 
-	pub fn cast_spell(&mut self, spell: &CauldronSpell) -> bool {
+	pub fn cast_spell(&mut self, spell: &CauldronSpell) -> Option<CauldronSpellResult> {
 		match spell {
 			CauldronSpell::Coadjuvancy => {
 				match self.page {
 					Some(ref mut pg) => {
 						if pg.is_full() {
-							return false;
+							return None;
 						}
 
 						loop {
 							let mut input = String::with_capacity(10);
 							if io::stdin().read_line(&mut input).is_err() {
-								return false;
+								return None;
 							}
 
 							let input_trimmed = input.trim_end(); 
@@ -94,13 +121,11 @@ impl Cauldron {
 							};
 				
 							if pg.write_value(String::new(), Some(var), false, 0) {
-								break;
+								return Some(CauldronSpellResult::DoNothing);
 							}
 						}
 					},
-					None => {
-						return false;
-					},
+					None => None,
 				}
 			},
 			CauldronSpell::Antipodize => {
@@ -113,15 +138,45 @@ impl Cauldron {
 								None => None,
 							}
 						}
+
+						Some(CauldronSpellResult::DoNothing)
 					},
-					None => {
-						return false;
-					},
+					None => None,
 				}
 			},
-			_ => {},
-		}
+			CauldronSpell::Judgement => {
+				match self.page {
+					Some(ref pg) => {
+						if pg.page_type == PageType::Boolean {
+							if pg.values.iter().all(|b| match b {
+								Some(b) => b.to_bool(),
+								None => true,
+							}) {
+								Some(CauldronSpellResult::DoNothing)
+							} else {
+								Some(CauldronSpellResult::SkipLine)
+							}
+						} else {
+							None
+						}
+					},
+					None => Some(CauldronSpellResult::DoNothing),
+				}
+			},
 
-		true
+			CauldronSpell::Amplify => {
+				self.spell_charge_amplifier += 1;
+				Some(CauldronSpellResult::DoNothing)
+			},
+			CauldronSpell::Squelch => {
+				self.reset_charge();
+				Some(CauldronSpellResult::DoNothing)
+			},
+			CauldronSpell::Reverberate => {
+				Some(CauldronSpellResult::JumpBack(self.spell_charge))
+			},
+
+			_ => None,
+		}
 	}
 }
