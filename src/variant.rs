@@ -158,5 +158,15 @@ impl Variant {
 			None
 		}
 	}
+
+	pub fn inverted(&self) -> Option<Variant> {
+		match self {
+			Variant::Boolean(b) => Some(Variant::Boolean(!b)),
+			Variant::Integer(i) => Some(Variant::Integer(-i)),
+			Variant::Float(f) => Some(Variant::Float(-f)),
+			Variant::Str(s) => Some(Variant::Str(s.chars().rev().collect())),
+			_ => None,
+		}
+	}
 }
 

@@ -9,7 +9,6 @@ use crate::variant::Variant;
 use crate::Program;
 use crate::sb_panic;
 use crate::constants::*;
-use crate::cauldron::CauldronSpell;
 
 use std::slice::Iter;
 
@@ -379,7 +378,10 @@ pub fn tokenize_line(line: String) -> Option<Vec<Token>> {
 			},
 
 			_ => {
-				if BUILTINS_ORDINALS.contains(st) || BUILTINS_CHAPTERS.contains(st) || BUILTINS_MISC.contains(st) || BUILTINS_SPELLS.contains(st) {
+				if BUILTINS_ORDINALS.contains(st)
+				|| BUILTINS_CHAPTERS.contains(st)
+				|| BUILTINS_MISC.contains(st)
+				|| BUILTINS_SPELLS.contains_key(st) {
 					tokens.push(Token::Builtin(st.to_string()));
 				} else if let Ok(int) = st.parse::<i64>() {
 					let token = Token::Literal(Variant::Integer(int));
@@ -498,7 +500,7 @@ impl ParserState {
 }
 
 pub fn execute_token_vector(program: &mut Program, tokens: Vec<Token>) {
-	//println!("{:?}", tokens);
+	println!("{:?}", tokens);
 	let mut state = ParserState::new();
 
 	if tokens.len() > 1 {
@@ -553,33 +555,6 @@ fn execute_tokens(current: &Token, next: Option<&Token>, state: &mut ParserState
 						},
 					}
 				},
-				/*Keyphrase::WriteEntry => {
-					match current {
-						Token::Identifier(ident) => {
-							state.cached_identifier = ident.to_string();
-							state.cached_keyphrase = Some(Keyphrase::WriteEntry);
-							state.status = ParseStateStatus::Top;
-						},
-						_ => {
-							sb_panic!(program.line_number);
-						},
-					}
-				},
-				Keyphrase::WithValue => {
-					match current {
-						Token::Literal(lit) => {
-							if state.cached_keyphrase == Some(Keyphrase::WriteEntry) {
-								program.write_literal_value(state.cached_identifier.clone(), Some(lit.clone()));
-								state.clear_cache();
-							} else {
-								sb_panic!(program.line_number);
-							}
-						},
-						_ => {
-							sb_panic!(program.line_number);
-						},
-					}
-				},*/
 				Keyphrase::Write => {
 					match current {
 						Token::Literal(lit) => {
@@ -644,33 +619,6 @@ fn execute_tokens(current: &Token, next: Option<&Token>, state: &mut ParserState
 						},
 					}
 				},
-				/*Keyphrase::WithThe => {
-					match current {
-						Token::Operator(op) => {
-							state.status = ParseStateStatus::Operation(op.clone());
-						},
-						_ => {
-							sb_panic!(program.line_number);
-						},
-					}
-				},*/
-				/*Keyphrase::FromMemory => {
-					if state.cached_keyphrase == Some(Keyphrase::Write) {
-						//program.write_memory_value(state.cached_identifier.clone());
-						state.cached_keyphrase = Some(Keyphrase::FromMemory);
-						state.status = ParseStateStatus::Top;
-					} else {
-						sb_panic!(program.line_number);
-					}
-				},*/
-				/*Keyphrase::FromDivineIntervention => {
-					if state.cached_keyphrase == Some(Keyphrase::WriteEntry) {
-						program.write_input_value(state.cached_identifier.clone());
-						state.clear_cache();
-					} else {
-						sb_panic!(program.line_number);
-					}
-				},*/
 				Keyphrase::TearOutChapter => {
 					state.cached_keyphrase = Some(Keyphrase::TearOutChapter);
 					state.status = ParseStateStatus::Top;
@@ -719,8 +667,7 @@ fn execute_tokens(current: &Token, next: Option<&Token>, state: &mut ParserState
 					}
 				},
 				Keyphrase::OnTheCauldron => {
-					// FIXME: This is bad do this a better way please
-					program.cast_cauldron_spell(&CauldronSpell::from_string(&state.cached_builtin).unwrap());
+					program.cast_cauldron_spell(&BUILTINS_SPELLS[state.cached_builtin.as_str()]);
 					state.clear_cache();
 				},
 				Keyphrase::KnockOverCauldron => {
@@ -745,134 +692,6 @@ fn execute_tokens(current: &Token, next: Option<&Token>, state: &mut ParserState
 					program.publish(false, String::new());
 					state.clear_cache();
 				},
-				/*Keyphrase::PublishSpellbookTo => {
-					match current {
-						Token::Builtin(bt) => {
-							if bt == "console" {
-								state.cached_builtin = bt.to_string();
-							} else {
-								sb_panic!(program.line_number);
-							}
-						},
-						Token::Literal(lit) => {
-							state.cached_literal = Some(lit.clone());
-						},
-						Token::Identifier(ident) => {
-							state.cached_identifier = ident.to_string();
-						},
-						_ => {
-							sb_panic!(program.line_number);
-						},
-					}
-
-					if next.is_none() {
-						let not_console = &state.cached_builtin != "console";
-						program.publish(
-							not_console,
-							if !not_console {
-								String::new()
-							} else if state.cached_literal.is_some() {
-								match state.cached_literal.as_ref().unwrap() {
-									Variant::Str(string) => {
-										string.clone()
-									},
-									_ => {
-										sb_panic!(program.line_number);
-									},
-								}
-							} else {
-								match program.try_get_value(&state.cached_identifier) {
-									Some(val) => {
-										match val {
-											Variant::Str(string) => string,
-											_ => {
-												sb_panic!(program.line_number);
-											},
-										}
-									},
-									None => {
-										sb_panic!(program.line_number);
-									},
-								}
-							},
-							false,
-							String::new(),
-						);
-
-						state.clear_cache();
-					} else {
-						state.cached_keyphrase = Some(Keyphrase::PublishSpellbookTo);
-						state.status = ParseStateStatus::Top;
-					}
-				},*/
-				/*Keyphrase::WrappedUpWith => {
-					match current {
-						Token::Literal(lit) => {
-							match lit {
-								Variant::Str(st) => {
-									let not_console = &state.cached_builtin != "console";
-									program.publish(
-										not_console,
-										if !not_console {
-											String::new()
-										} else if state.cached_literal.is_some() {
-											match state.cached_literal.as_ref().unwrap() {
-												Variant::Str(string) => {
-													string.clone()
-												},
-												_ => {
-													sb_panic!(program.line_number);
-												},
-											}
-										} else {
-											match program.try_get_value(&state.cached_identifier) {
-												Some(val) => {
-													match val {
-														Variant::Str(string) => string,
-														_ => {
-															sb_panic!(program.line_number);
-														},
-													}
-												},
-												None => {
-													println!("{}", state.cached_identifier);
-													sb_panic!(program.line_number);
-												},
-											}
-										},
-										true,
-										st.to_string(),
-									);
-
-									state.clear_cache();
-								},
-								_ => {
-									sb_panic!(program.line_number);
-								},
-							}
-						},
-						_ => {
-							sb_panic!(program.line_number);
-						},
-					}
-				},*/
-				/*Keyphrase::SignChapterWith => {
-					match current {
-						Token::Literal(lit) => {
-							match lit {
-								Variant::Str(string) => {
-									program.
-								},
-								_ => {
-									sb_panic!(program.line_number);
-								},
-							}
-						},
-						_ => {
-							sb_panic!(program.line_number);
-						}
-					}
-				},*/
 				Keyphrase::SignAcknowledgementsPageWith => {
 					match current {
 						Token::Literal(lit) => {
@@ -1022,13 +841,6 @@ fn test_tokenize() {
 		tokenize_line(r#""Hello, world!""#.into()),
 		Some(vec![T::Literal(Variant::Str(r#"Hello, world!"#.into()))]),
 	);
-
-	/*assert_eq!(tokenize_line("write entry hello with value 5".into()), Some(vec![
-		T::Keyphrase(K::WriteEntry),
-		T::Identifier("hello".into()),
-		T::Keyphrase(K::WithValue),
-		T::Literal(Variant::Integer(5)),
-	]));*/
 }
 
 /* 

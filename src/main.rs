@@ -5,8 +5,6 @@
 
 #![feature(iter_advance_by)]
 
-extern crate rand;
-extern crate peekmore;
 mod cauldron;
 mod constants;
 mod macros;

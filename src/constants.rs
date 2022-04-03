@@ -3,6 +3,12 @@
 //           BY DIANE SPARKS
 // *~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*
 
+use lazy_static::lazy_static;
+use maplit::hashmap;
+use std::collections::HashMap;
+
+use crate::cauldron::CauldronSpell;
+
 pub const BUILTINS_CHAPTERS: [&'static str; 5] = [
 	"Presages",
 	"Hexes",
@@ -11,12 +17,18 @@ pub const BUILTINS_CHAPTERS: [&'static str; 5] = [
 	"Recipes",
 ];
 
-pub const BUILTINS_SPELLS: [&'static str; 4] = [
-	"Coadjuvancy",
-	"Redesign",
-	"Stoachastize",
-	"Entwine",
-];
+lazy_static! {
+	pub static ref BUILTINS_SPELLS: HashMap<&'static str, CauldronSpell> = {
+		hashmap!{
+			"Coadjuvancy" => CauldronSpell::Coadjuvancy,
+			"Judgement" => CauldronSpell::Judgement,
+			"Antipodize" => CauldronSpell::Antipodize,
+			"Entwine" => CauldronSpell::Entwine,
+			"Stoachastize" => CauldronSpell::Stoachastize,
+			"Redesign" => CauldronSpell::Redesign,
+		}
+	};
+}
 
 pub const BUILTINS_ORDINALS: [&'static str; 3] = [
 	"first",

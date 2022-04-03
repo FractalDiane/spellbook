@@ -8,3 +8,5 @@ edition = "2018"
 [dependencies]
 rand = "0.8.5"
 peekmore = "1.0.0"
+lazy_static = "1.4.0"
+maplit = "1.0.2"

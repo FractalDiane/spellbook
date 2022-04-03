@@ -6,7 +6,6 @@
 use crate::variant::Variant;
 use crate::page::Page;
 use std::io;
-use std::slice::Iter;
 
 #[derive(Debug, Clone)]
 pub enum CauldronSpell {
@@ -14,29 +13,8 @@ pub enum CauldronSpell {
 	Coadjuvancy,
 	Stoachastize,
 	Redesign,
-}
-
-impl CauldronSpell {
-	// FIXME: This is bad do this a better way please
-	fn iter() -> Iter<'static, Self> {
-		const ALL_SPELLS: [CauldronSpell; 4] = [
-			CauldronSpell::Entwine,
-			CauldronSpell::Coadjuvancy,
-			CauldronSpell::Stoachastize,
-			CauldronSpell::Redesign,
-		];
-
-		ALL_SPELLS.iter()
-	}
-	pub fn from_string(string: &String) -> Option<Self> {
-		for var in CauldronSpell::iter() {
-			if *string == format!("{:?}", var) {
-				return Some(var.clone());
-			}
-		}
-
-		None
-	}
+	Judgement,
+	Antipodize,
 }
 
 pub struct Cauldron {
@@ -117,6 +95,22 @@ impl Cauldron {
 				
 							if pg.write_value(String::new(), Some(var), false, 0) {
 								break;
+							}
+						}
+					},
+					None => {
+						return false;
+					},
+				}
+			},
+			CauldronSpell::Antipodize => {
+				match self.page {
+					Some(ref mut pg) => {
+						for i in 0..3 {
+							pg.entry_names[i] = pg.entry_names[i].chars().rev().collect();
+							pg.values[i] = match &pg.values[i] {
+								Some(val) => val.inverted(),
+								None => None,
 							}
 						}
 					},
