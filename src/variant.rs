@@ -3,7 +3,7 @@
 //           BY DIANE SPARKS
 // *~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*
 
-#[derive(Debug, PartialEq, Clone)]
+#[derive(Debug, PartialEq, PartialOrd, Clone,)]
 pub enum Variant {
 	Boolean(bool),
 	Integer(i64),
@@ -169,4 +169,3 @@ impl Variant {
 		}
 	}
 }
-

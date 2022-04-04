@@ -1,0 +1,87 @@
+turn to chapter Illusions
+sign acknowledgements page with ""
+write 1 under i
+tear out chapter and put it in the drawer
+turn to chapter Hexes
+write 0 under prevprev
+publish spellbook
+tear out chapter and throw it in the trash
+write 1 under cur
+publish spellbook
+write 0 under prev
+write 0 under prevprev
+cast Vacancy on the cauldron
+memorize prev
+turn to chapter Illusions
+write from memory under prevprev
+tear out chapter and toss it in the cauldron
+turn to chapter Hexes
+memorize cur
+turn to chapter Illusions
+write from memory under prev
+tear out chapter and toss it in the cauldron
+knock over cauldron
+turn to chapter Hexes
+memorize prev
+turn to chapter Illusions
+write from memory under prevprev
+turn to chapter Hexes
+memorize cur
+turn to chapter Illusions
+write from memory under prev
+turn to chapter Hexes
+pick up chapter off the floor and put it back
+memorize first entry
+tear out chapter and throw it in the trash
+write from memory under cur
+turn to chapter Illusions
+memorize prevprev
+turn to chapter Hexes
+write from memory under prevprev
+turn to chapter Illusions
+memorize prev
+tear out chapter and throw it in the trash
+turn to chapter Hexes
+write from memory under prev
+memorize cur
+tear out chapter and put it in the drawer
+write from memory under cur
+publish spellbook
+take out a chapter from the drawer and put it back
+cast Reverberate on the cauldron
+
+
+
+
+
+
+
+take out a chapter from the drawer and put it back
+turn to chapter Illusions
+take out a chapter from the drawer and put it back
+tear out chapter and toss it in the cauldron
+write 1 under add
+tear out chapter and toss it in the cauldron
+knock over cauldron
+pick up chapter off the floor and put it back
+cast Reverberate on the cauldron
+
+
+
+
+write 20 under cmp
+tear out chapter and toss it in the cauldron
+cast Juxtapose on the cauldron
+knock over cauldron
+turn to chapter Presages
+pick up chapter off the floor and put it back
+memorize third entry
+tear out chapter and throw it in the trash
+write from memory under done_yet
+write true under e2
+write true under e3
+tear out chapter and toss it in the cauldron
+cast Antipodize on the cauldron
+cast Judgement on the cauldron
+slam spellbook shut
+cast Reverberate on the cauldron

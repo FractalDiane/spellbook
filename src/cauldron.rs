@@ -14,16 +14,21 @@ pub enum CauldronSpell {
 	Stoachastize,
 	Redesign,
 	Judgement,
+
 	Antipodize,
+	Juxtapose,
 
 	Reverberate,
 	Amplify,
 	Squelch,
+
+	Vacation,
 }
 
 pub enum CauldronSpellResult {
 	DoNothing,
-	SkipLine,
+	NoCharge,
+	SkipLine(usize),
 	JumpBack(usize),
 }
 
@@ -42,6 +47,10 @@ impl Cauldron {
 		}
 	}
 
+	pub fn get_amplifier(&self) -> usize {
+		self.spell_charge_amplifier
+	}
+
 	pub fn increase_charge(&mut self, override_amount: bool, amount: usize) {
 		self.spell_charge += if override_amount { amount } else { self.spell_charge_amplifier };
 	}
@@ -52,6 +61,10 @@ impl Cauldron {
 
 	pub fn reset_charge(&mut self) {
 		self.spell_charge = 0;
+		
+	}
+
+	pub fn reset_amplifier(&mut self) {
 		self.spell_charge_amplifier = 1;
 	}
 
@@ -144,6 +157,19 @@ impl Cauldron {
 					None => None,
 				}
 			},
+			CauldronSpell::Juxtapose => {
+				match self.page {
+					Some(ref mut pg) => {
+						let mut new_page = Page::new(PageType::Boolean);
+						new_page.values[0] = Some(Variant::Boolean(pg.values[1].is_some() && pg.values[2].is_some()));
+						new_page.values[1] = Some(Variant::Boolean(pg.values[0] >= pg.values[2]));
+						new_page.values[2] = Some(Variant::Boolean(pg.values[0] == pg.values[1]));
+						
+						Some(CauldronSpellResult::DoNothing)
+					},
+					None => None,
+				}
+			},
 			CauldronSpell::Judgement => {
 				match self.page {
 					Some(ref pg) => {
@@ -154,7 +180,7 @@ impl Cauldron {
 							}) {
 								Some(CauldronSpellResult::DoNothing)
 							} else {
-								Some(CauldronSpellResult::SkipLine)
+								Some(CauldronSpellResult::SkipLine(self.spell_charge))
 							}
 						} else {
 							None
@@ -166,14 +192,19 @@ impl Cauldron {
 
 			CauldronSpell::Amplify => {
 				self.spell_charge_amplifier += 1;
-				Some(CauldronSpellResult::DoNothing)
+				Some(CauldronSpellResult::NoCharge)
 			},
 			CauldronSpell::Squelch => {
 				self.reset_charge();
-				Some(CauldronSpellResult::DoNothing)
+				self.reset_amplifier();
+				Some(CauldronSpellResult::NoCharge)
 			},
 			CauldronSpell::Reverberate => {
 				Some(CauldronSpellResult::JumpBack(self.spell_charge))
+			},
+
+			CauldronSpell::Vacation => {
+				Some(CauldronSpellResult::DoNothing)
 			},
 
 			_ => None,

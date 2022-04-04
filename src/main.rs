@@ -36,7 +36,7 @@ pub struct Program {
 	pages: [Page; 5],
 	cauldron: Cauldron,
 
-	spell_line_stack: Vec<usize>,
+	spell_line_stack: Vec<(usize, usize)>,
 
 	current_page: usize,
 	turned_to_any_page: bool,
@@ -149,36 +149,40 @@ impl Program {
 
 		match self.cauldron.cast_spell(spell) {
 			Some(CauldronSpellResult::DoNothing) => {},
-			Some(CauldronSpellResult::SkipLine) => {
-				self.spell_line_stack.push(self.line_number);
+			Some(CauldronSpellResult::NoCharge) => {
+				//self.spell_line_stack.push(self.line_number);
+				return;
+			},
+			Some(CauldronSpellResult::SkipLine(charge)) => {
+				self.spell_line_stack.push((self.line_number, self.cauldron.get_amplifier()));
 				self.cauldron.increase_charge(false, 0);
-				self.line_number += 1;
+				self.line_number += charge;
 				return;
 			},
 			Some(CauldronSpellResult::JumpBack(charge)) => {
 				let result = charge - self.spell_line_stack.len() + 1;
 				let index = self.spell_line_stack.len() - result;
 				self.line_number = match self.spell_line_stack.get(index) {
-					Some(line) => *line - 1,
+					Some(line) => line.0 - 1,
 					None => {
 						sb_panic!(self.line_number);
 					}
 				};
 
 				for _ in 0..result {
+					self.cauldron.decrease_charge(true, self.spell_line_stack.last().unwrap_or_else(|| sb_panic!(self.line_number)).1);
 					self.spell_line_stack.pop();
 				}
 
-				self.cauldron.decrease_charge(true, result);
+				self.cauldron.reset_amplifier();
 				return;
 			},
-
 			None => {
 				sb_panic!(self.line_number);
 			},
 		}
 
-		self.spell_line_stack.push(self.line_number);
+		self.spell_line_stack.push((self.line_number, self.cauldron.get_amplifier()));
 		self.cauldron.increase_charge(false, 0);
 	}
 

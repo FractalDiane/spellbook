@@ -22,7 +22,6 @@ lazy_static! {
 		hashmap!{
 			"Coadjuvancy" => CauldronSpell::Coadjuvancy,
 			"Judgement" => CauldronSpell::Judgement,
-			"Antipodize" => CauldronSpell::Antipodize,
 			"Entwine" => CauldronSpell::Entwine,
 			"Stoachastize" => CauldronSpell::Stoachastize,
 			"Redesign" => CauldronSpell::Redesign,
@@ -30,6 +29,11 @@ lazy_static! {
 			"Reverberate" => CauldronSpell::Reverberate,
 			"Amplify" => CauldronSpell::Amplify,
 			"Squelch" => CauldronSpell::Squelch,
+
+			"Juxtapose" => CauldronSpell::Juxtapose,
+			"Antipodize" => CauldronSpell::Antipodize,
+
+			"Vacancy" => CauldronSpell::Vacation,
 		}
 	};
 }
