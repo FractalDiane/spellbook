@@ -50,10 +50,12 @@ pub struct Program {
 
 	line_number: usize,
 	exit: bool,
+
+	debug_mode: bool,
 }
 
 impl Program {
-	pub fn new() -> Self {
+	pub fn new(debug_mode: bool) -> Self {
 		let pages = [Page::new(PageType::Boolean), Page::new(PageType::Integer),
 					Page::new(PageType::Float),Page::new(PageType::Str),
 					Page::new(PageType::Routine)];
@@ -76,6 +78,8 @@ impl Program {
 
 			line_number: 1,
 			exit: false,
+
+			debug_mode,
 		}
 	}
 
@@ -347,16 +351,31 @@ fn main() {
 		}
 	}));*/
 
-	let mut args = env::args();
-	if args.len() != 2 {
+	let args = env::args().collect::<Vec<String>>();
+	if args.len() < 2 {
 		panic!();
 	}
 
-	args.next().unwrap();
-	let path = args.next().unwrap();
+	let mut path = String::new();
+	let mut debug_mode = false;
+	for arg in &args[1..] {
+		match arg.as_str() {
+			"--trace" => {
+				debug_mode = true;
+			},
+			_ => {
+				path = arg.into();
+			},
+		}
+	}
+
+	if path.is_empty() {
+		panic!();
+	}
+
 	let infile = File::open(&path).unwrap();
 
-	let mut program = Program::new();
+	let mut program = Program::new(debug_mode);
 	let mut code = vec![];
 	for line in io::BufReader::new(infile).lines() {
 		match line {

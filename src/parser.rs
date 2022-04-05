@@ -501,7 +501,10 @@ impl ParserState {
 }
 
 pub fn execute_token_vector(program: &mut Program, tokens: Vec<Token>) {
-	println!("{:?}", tokens);
+	if program.debug_mode {
+		println!("{:?}", tokens);
+	}
+	
 	let mut state = ParserState::new();
 
 	if tokens.len() > 1 {
