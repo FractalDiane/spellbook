@@ -11,6 +11,7 @@ publish spellbook
 write 0 under prev
 write 0 under prevprev
 cast Vacancy on the cauldron
+cast Amplify on the cauldron
 memorize prev
 turn to chapter Illusions
 write from memory under prevprev
@@ -48,40 +49,36 @@ tear out chapter and put it in the drawer
 write from memory under cur
 publish spellbook
 take out a chapter from the drawer and put it back
-cast Reverberate on the cauldron
 
-
-
-
-
-
-
-take out a chapter from the drawer and put it back
 turn to chapter Illusions
 take out a chapter from the drawer and put it back
+memorize first entry
+tear out chapter and toss it in the cauldron
+write 1 under add
+tear out chapter and toss it in the cauldron
+write 0 under blank
+write 20 under cmp
+tear out chapter and toss it in the cauldron
+
+cast Juxtapose on the cauldron
+turn to chapter Presages
+write true under one
+write true under two
+tear out chapter and toss it in the cauldron
+cast Diminish on the cauldron
+cast Judgement on the cauldron
+cast Vacancy on the cauldron
+slam spellbook shut
+knock over cauldron
+turn to chapter Illusions
+write from memory under i
 tear out chapter and toss it in the cauldron
 write 1 under add
 tear out chapter and toss it in the cauldron
 knock over cauldron
 pick up chapter off the floor and put it back
-cast Reverberate on the cauldron
-
-
-
-
-write 20 under cmp
-tear out chapter and toss it in the cauldron
-cast Juxtapose on the cauldron
-knock over cauldron
-turn to chapter Presages
-pick up chapter off the floor and put it back
-memorize third entry
-tear out chapter and throw it in the trash
-write from memory under done_yet
-write true under e2
-write true under e3
-tear out chapter and toss it in the cauldron
-cast Antipodize on the cauldron
-cast Judgement on the cauldron
-slam spellbook shut
+tear out chapter and put it in the drawer
+turn to chapter Hexes
+cast Amplify on the cauldron
+cast Vacancy on the cauldron
 cast Reverberate on the cauldron

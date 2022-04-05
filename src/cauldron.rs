@@ -7,7 +7,7 @@ use crate::variant::Variant;
 use crate::page::*;
 use std::io;
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq)]
 pub enum CauldronSpell {
 	Entwine,
 	Coadjuvancy,
@@ -21,6 +21,7 @@ pub enum CauldronSpell {
 	Reverberate,
 	Amplify,
 	Squelch,
+	Diminish,
 
 	Vacation,
 }
@@ -36,6 +37,7 @@ pub struct Cauldron {
 	page: Option<Page>,
 	spell_charge: usize,
 	spell_charge_amplifier: usize,
+	consecutive_amplifies: usize,
 }
 
 impl Cauldron {
@@ -44,6 +46,7 @@ impl Cauldron {
 			page: None,
 			spell_charge: 0,
 			spell_charge_amplifier: 1,
+			consecutive_amplifies: 0,
 		}
 	}
 
@@ -56,7 +59,7 @@ impl Cauldron {
 	}
 
 	pub fn decrease_charge(&mut self, override_amount: bool, amount: usize) {
-		self.spell_charge -= if override_amount { amount } else { self.spell_charge_amplifier };
+		self.spell_charge = self.spell_charge.saturating_sub(if override_amount { amount } else { self.spell_charge_amplifier });
 	}
 
 	pub fn reset_charge(&mut self) {
@@ -107,6 +110,10 @@ impl Cauldron {
 	}
 
 	pub fn cast_spell(&mut self, spell: &CauldronSpell) -> Option<CauldronSpellResult> {
+		if *spell != CauldronSpell::Amplify {
+			self.consecutive_amplifies = 0;
+		}
+		
 		match spell {
 			CauldronSpell::Coadjuvancy => {
 				match self.page {
@@ -164,6 +171,7 @@ impl Cauldron {
 						new_page.values[0] = Some(Variant::Boolean(pg.values[1].is_some() && pg.values[2].is_some()));
 						new_page.values[1] = Some(Variant::Boolean(pg.values[0] >= pg.values[2]));
 						new_page.values[2] = Some(Variant::Boolean(pg.values[0] == pg.values[1]));
+						self.page = Some(new_page);
 						
 						Some(CauldronSpellResult::DoNothing)
 					},
@@ -192,11 +200,20 @@ impl Cauldron {
 
 			CauldronSpell::Amplify => {
 				self.spell_charge_amplifier += 1;
-				Some(CauldronSpellResult::NoCharge)
+				self.consecutive_amplifies += 1;
+				if self.consecutive_amplifies > 3 {
+					None
+				} else {
+					Some(CauldronSpellResult::NoCharge)
+				}
 			},
 			CauldronSpell::Squelch => {
 				self.reset_charge();
 				self.reset_amplifier();
+				Some(CauldronSpellResult::NoCharge)
+			},
+			CauldronSpell::Diminish => {
+				self.decrease_charge(true, 1);
 				Some(CauldronSpellResult::NoCharge)
 			},
 			CauldronSpell::Reverberate => {

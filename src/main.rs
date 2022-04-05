@@ -150,7 +150,6 @@ impl Program {
 		match self.cauldron.cast_spell(spell) {
 			Some(CauldronSpellResult::DoNothing) => {},
 			Some(CauldronSpellResult::NoCharge) => {
-				//self.spell_line_stack.push(self.line_number);
 				return;
 			},
 			Some(CauldronSpellResult::SkipLine(charge)) => {

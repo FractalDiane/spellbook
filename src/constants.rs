@@ -29,11 +29,13 @@ lazy_static! {
 			"Reverberate" => CauldronSpell::Reverberate,
 			"Amplify" => CauldronSpell::Amplify,
 			"Squelch" => CauldronSpell::Squelch,
+			"Diminish" => CauldronSpell::Diminish,
 
 			"Juxtapose" => CauldronSpell::Juxtapose,
 			"Antipodize" => CauldronSpell::Antipodize,
 
 			"Vacancy" => CauldronSpell::Vacation,
+			
 		}
 	};
 }

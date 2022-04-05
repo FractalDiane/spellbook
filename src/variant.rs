@@ -100,7 +100,9 @@ impl Variant {
 	}
 
 	pub fn add(&self, rhs: Variant) -> Option<Variant> {
-		if let (Some(left), Some(right)) = (self.try_unwrap_int(), rhs.try_unwrap_int()) {
+		if let (Some(left), Some(right)) = (self.try_unwrap_bool(), rhs.try_unwrap_bool()) {
+			Some(Variant::Boolean(left || right))
+		} else if let (Some(left), Some(right)) = (self.try_unwrap_int(), rhs.try_unwrap_int()) {
 			Some(Variant::Integer(left + right))
 		} else if let (Some(left), Some(right)) = (self.try_unwrap_float(), rhs.try_unwrap_float()) {
 			Some(Variant::Float(left + right))
