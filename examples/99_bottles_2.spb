@@ -1,6 +1,7 @@
 turn to chapter Hexes
 sign acknowledgements page with ""
 write 99 under bottles
+cast Vacancy on the cauldron
 memorize bottles
 tear out chapter and toss it in the cauldron
 write -1 under minus
@@ -9,7 +10,7 @@ knock over cauldron
 pick up chapter off the floor and put it back
 write from memory under bottles_current
 turn to chapter Incantations
-write " of beer on the wall." under line1
+write " of beer on the wall.\n\n" under line1
 tear out chapter and put it in the drawer
 turn to chapter Hexes
 memorize first entry
@@ -18,20 +19,137 @@ write from memory under count
 write 1 under cmp
 tear out chapter and toss it in the cauldron
 cast Juxtapose on the cauldron
+cast Diminish on the cauldron
 knock over cauldron
+turn to chapter Presages
 pick up chapter off the floor and put it back
 memorize third entry
 tear out chapter and throw it in the trash
-write from memory under is_one
-write true under e2
-write true under e3
+write from memory under is_not_one
 tear out chapter and toss it in the cauldron
 turn to chapter Incantations
-cast Antipodize on the cauldron
 cast Judgement on the cauldron
 write "bottle" under line2
+cast Antipodize on the cauldron
+cast Diminish on the cauldron
+cast Diminish on the cauldron
+cast Judgement on the cauldron
 write "bottles" under line2
+turn to chapter Hexes
+take out a chapter from the drawer and put it back
+turn to chapter Incantations
 tear out chapter and put it in the drawer
+turn to chapter Hexes
+memorize first entry
+turn to chapter Presages
+write from memory under is_not_zero
+tear out chapter and toss it in the cauldron
+turn to chapter Incantations
+cast Judgement on the cauldron
+write from memory under line3
+cast Antipodize on the cauldron
+cast Diminish on the cauldron
+cast Diminish on the cauldron
+cast Diminish on the cauldron
+cast Judgement on the cauldron
+write "No " under line3
+tear out chapter and put it in the drawer
+
+write "Take one down, pass it around,\n" under line3andahalf
+tear out chapter and put it in the drawer
+
+write " of beer.\n" under line4
+tear out chapter and put it in the drawer
+turn to chapter Hexes
+memorize bottles_current
+tear out chapter and put it in the drawer
+write from memory under count
+write 1 under cmp
+tear out chapter and toss it in the cauldron
+cast Juxtapose on the cauldron
+cast Diminish on the cauldron
+knock over cauldron
+turn to chapter Presages
+pick up chapter off the floor and put it back
+memorize third entry
+tear out chapter and throw it in the trash
+write from memory under is_not_one
+tear out chapter and toss it in the cauldron
+turn to chapter Incantations
+cast Judgement on the cauldron
+write "bottles" under noun
+write "bottle" under noun
+knock over cauldron
+tear out chapter and put it in the drawer
+turn to chapter Hexes
+take out a chapter from the drawer and put it back
+memorize bottles_current
+turn to chapter Presages
+write from memory under is_not_zero
+tear out chapter and toss it in the cauldron
+turn to chapter Incantations
+cast Judgement on the cauldron
+write from memory under start
+write "No " under start
+knock over cauldron
+tear out chapter and toss it in the cauldron
+take out a chapter from the drawer and put it back
+memorize noun
+tear out chapter and throw it in the trash
+write "" under blank
+write from memory under noun
+tear out chapter and toss it in the cauldron
+knock over cauldron
+pick up chapter off the floor and put it back
+memorize second entry
+tear out chapter and toss it in the cauldron
+write from memory under line5
+tear out chapter and put it in the drawer
+knock over cauldron
+pick up chapter off the floor and put it back
+memorize first entry
+tear out chapter and toss it in the cauldron
+write from memory under line6
+tear out chapter and put it in the drawer
+write " of beer on the wall,\n" under line7
+tear out chapter and put it in the drawer
+knock over cauldron
+pick up chapter off the floor and put it back
+memorize second entry
+tear out chapter and toss it in the cauldron
+write from memory under line8
+tear out chapter and put it in the drawer
+knock over cauldron
+pick up chapter off the floor and put it back
+memorize first entry
+tear out chapter and throw it in the trash
+write from memory under line9
+
+tear out chapter and toss it in the cauldron
+take out a chapter from the drawer and put it back
+tear out chapter and toss it in the cauldron
+take out a chapter from the drawer and put it back
+tear out chapter and toss it in the cauldron
+take out a chapter from the drawer and put it back
+tear out chapter and toss it in the cauldron
+take out a chapter from the drawer and put it back
+tear out chapter and toss it in the cauldron
+take out a chapter from the drawer and put it back
+tear out chapter and toss it in the cauldron
+take out a chapter from the drawer and put it back
+tear out chapter and toss it in the cauldron
+take out a chapter from the drawer and put it back
+tear out chapter and toss it in the cauldron
+take out a chapter from the drawer and put it back
+tear out chapter and toss it in the cauldron
+knock over cauldron
+pick up chapter off the floor and put it back
+publish spellbook
+slam spellbook shut
+
+
+
+
 
 
 

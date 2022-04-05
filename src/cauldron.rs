@@ -110,7 +110,7 @@ impl Cauldron {
 	}
 
 	pub fn cast_spell(&mut self, spell: &CauldronSpell) -> Option<CauldronSpellResult> {
-		if *spell != CauldronSpell::Amplify {
+		if *spell != CauldronSpell::Amplify && *spell != CauldronSpell::Vacation {
 			self.consecutive_amplifies = 0;
 		}
 		
@@ -194,7 +194,7 @@ impl Cauldron {
 							None
 						}
 					},
-					None => Some(CauldronSpellResult::DoNothing),
+					None => None,
 				}
 			},
 
