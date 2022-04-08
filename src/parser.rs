@@ -6,7 +6,7 @@
 use peekmore::{PeekMore, PeekMoreIterator};
 
 use crate::variant::Variant;
-use crate::Program;
+use crate::program::Program;
 use crate::sb_panic;
 use crate::constants::*;
 
@@ -220,26 +220,6 @@ pub fn tokenize_line(line: String) -> Option<Vec<Token>> {
 					return None;
 				}
 			},
-			/*"with" => {
-				match subtokens.next() {
-					Some(&"value") => {
-						let token = Token::Keyphrase(Keyphrase::WithValue);
-						tokens.push(token);
-					},
-					Some(&"the") => {
-						if expect_subtokens(&mut subtokens, &["value", "of"]) {
-							let token = Token::Keyphrase(Keyphrase::WithTheValueOf);
-							tokens.push(token);
-						} else {
-							let token = Token::Keyphrase(Keyphrase::WithThe);
-							tokens.push(token);
-						}
-					},
-					_ => {
-						return None;
-					}
-				}
-			},*/
 			"from" => {
 				if expect_subtokens(&mut subtokens, &["divine", "intervention"]) {
 					let token = Token::Keyphrase(Keyphrase::FromDivineIntervention);
@@ -305,14 +285,6 @@ pub fn tokenize_line(line: String) -> Option<Vec<Token>> {
 					},
 				}
 			},
-			/*"wrapped" => {
-				if expect_subtokens(&mut subtokens, &["up", "with"]) {
-					let token = Token::Keyphrase(Keyphrase::WrappedUpWith);
-					tokens.push(token);
-				} else {
-					return None;
-				}
-			},*/
 			"sign" => {
 				/*if expect_subtokens(&mut subtokens, &["chapter", "with"]) {
 					let token = Token::Keyphrase(Keyphrase::SignChapterWith);
@@ -411,7 +383,6 @@ pub fn tokenize_line(line: String) -> Option<Vec<Token>> {
 enum ParseStateStatus {
 	Top,
 	Keyphrase(Keyphrase),
-	//Operation(Operator),
 }
 
 struct ParserState {
@@ -452,52 +423,6 @@ impl ParserState {
 		&& self.cached_operand_list.is_empty()
 		&& self.status == ParseStateStatus::Top
 	}
-
-	/* 
-	pub fn perform_operation(&self, operation: &Operator) -> Option<Variant> {
-		if self.cached_operand_list.len() < 1 {
-			return None;
-		}
-
-		if let Some(mut result) = match operation {
-			Operator::Sum => self.cached_operand_list[0].add(self.cached_operand_list[1].clone()),
-			Operator::Difference => self.cached_operand_list[0].sub(self.cached_operand_list[1].clone()),
-			Operator::Product => self.cached_operand_list[0].mul(self.cached_operand_list[1].clone()),
-			Operator::Quotient => self.cached_operand_list[0].div(self.cached_operand_list[1].clone()),
-			Operator::Remainder => self.cached_operand_list[0].rem(self.cached_operand_list[1].clone()),
-			Operator::Concatenation => self.cached_operand_list[0].concat(self.cached_operand_list[1].clone()),
-			_ => {
-				return None;
-			}
-		} {
-			let mut index = 2;
-			while index < self.cached_operand_list.len() {
-				result = match match operation {
-					Operator::Sum => result.add(self.cached_operand_list[index].clone()),
-					Operator::Difference => result.sub(self.cached_operand_list[index].clone()),
-					Operator::Product => result.mul(self.cached_operand_list[index].clone()),
-					Operator::Quotient => result.div(self.cached_operand_list[index].clone()),
-					Operator::Remainder => result.rem(self.cached_operand_list[index].clone()),
-					Operator::Concatenation => result.concat(self.cached_operand_list[index].clone()),
-					_ => {
-						return None;
-					},
-				} {
-					Some(r) => r,
-					None => {
-						return None;
-					},
-				};
-
-				index += 1;
-			}
-
-			Some(result)
-		} else {
-			None
-		}
-	}
-	*/
 }
 
 pub fn execute_token_vector(program: &mut Program, tokens: Vec<Token>) {
@@ -769,49 +694,6 @@ fn execute_tokens(current: &Token, next: Option<&Token>, state: &mut ParserState
 				_ => {},
 			}
 		},
-		
-		/*ParseStateStatus::Operation(operator) => {
-			let operand = match current {
-				Token::Identifier(ident) => {
-					match program.try_get_value(&ident) {
-						Some(val) => val,
-						None => {
-							sb_panic!(program.line_number);
-						},
-					}
-				},
-				Token::Literal(lit) => {
-					lit.clone()
-				},
-				Token::Operator(op) => {
-					match op {
-						Operator::And => {
-							return;
-						},
-						_ => {
-							sb_panic!(program.line_number);
-						},
-					}
-				},
-				_ => {
-					sb_panic!(program.line_number);
-				}
-			};
-
-			state.cached_operand_list.push(operand);
-
-			if next.is_none() {
-				match state.perform_operation(&operator) {
-					Some(result) => {
-						program.write_literal_value(state.cached_identifier.clone(), Some(result));
-						state.clear_cache();
-					},
-					None => {
-						sb_panic!(program.line_number);
-					}
-				}
-			}
-		},*/
 	}
 }
 
