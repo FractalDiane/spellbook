@@ -427,7 +427,7 @@ impl ParserState {
 
 pub fn execute_token_vector(program: &mut Program, tokens: Vec<Token>) {
 	if program.debug_mode {
-		println!("{}  {:?}", program.line_number, tokens);
+		eprintln!("{:<4}  {:?}", program.line_number, tokens);
 	}
 	
 	let mut state = ParserState::new();

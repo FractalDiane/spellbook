@@ -29,6 +29,7 @@ pub struct Program {
 	custom_signature: String,
 	use_custom_signature: bool,
 
+	pub line_internal: usize,
 	pub line_number: usize,
 	pub exit: bool,
 
@@ -57,6 +58,7 @@ impl Program {
 			custom_signature: String::new(),
 			use_custom_signature: false,
 
+			line_internal: 0,
 			line_number: 1,
 			exit: false,
 
@@ -68,9 +70,9 @@ impl Program {
 		match by {
 			Variant::Integer(int) => {
 				if *int >= 0 {
-					self.line_number += *int as usize;
+					self.line_internal += *int as usize;
 				} else {
-					self.line_number -= -*int as usize;
+					self.line_internal -= -*int as usize;
 				}
 			},
 			_ => {
@@ -188,13 +190,13 @@ impl Program {
 				return;
 			},
 			Some(CauldronSpellResult::SkipLine(charge)) => {
-				self.spell_line_stack.push((self.line_number, self.cauldron.get_amplifier()));
+				self.spell_line_stack.push((self.line_internal, self.cauldron.get_amplifier()));
 				self.cauldron.increase_charge(false, 0);
-				self.line_number += charge;
+				self.line_internal += charge;
 				return;
 			},
 			Some(CauldronSpellResult::JumpBack(charge)) => {
-				self.line_number = match self.spell_line_stack.get(charge) {
+				self.line_internal = match self.spell_line_stack.get(charge) {
 					Some(line) => line.0 - 1,
 					None => {
 						sb_panic!(self.line_number);
@@ -214,7 +216,7 @@ impl Program {
 			},
 		}
 
-		self.spell_line_stack.push((self.line_number, self.cauldron.get_amplifier()));
+		self.spell_line_stack.push((self.line_internal, self.cauldron.get_amplifier()));
 		self.cauldron.increase_charge(false, 0);
 	}
 

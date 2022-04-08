@@ -7,7 +7,7 @@ use crate::variant::Variant;
 use crate::page::*;
 use std::io;
 
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Clone, PartialEq)]
 pub enum CauldronSpell {
 	Entwine,
 	Coadjuvancy,

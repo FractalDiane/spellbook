@@ -14,7 +14,7 @@ pub enum PageType {
 	Routine,
 }
 
-#[derive(Clone, Debug)]
+#[derive(Clone)]
 pub struct Page {
 	pub entry_names: [String; 3],
 	pub values: [Option<Variant>; 3],

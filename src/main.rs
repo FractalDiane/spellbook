@@ -14,6 +14,9 @@ mod program;
 mod variant;
 
 use program::Program;
+use constants::ERROR_MESSAGES;
+
+use rand::prelude::*;
 
 use std::env;
 use std::fs::File;
@@ -21,7 +24,7 @@ use std::io::{self, BufRead};
 use std::panic;
 
 fn main() {
-	/*panic::set_hook(Box::new(|info| {
+	panic::set_hook(Box::new(|info| {
 		let mut rng = thread_rng();
 		let index: usize = rng.gen_range(0..10);
 		let message = ERROR_MESSAGES[index];
@@ -30,7 +33,7 @@ fn main() {
 		} else {
 			eprintln!("\x1b[0;91mCatastrophe!\x1b[0m\n{}", message);
 		}
-	}));*/
+	}));
 
 	let args = env::args().collect::<Vec<String>>();
 	if args.len() < 2 {
@@ -58,36 +61,37 @@ fn main() {
 
 	let mut program = Program::new(debug_mode);
 	let mut code = vec![];
-	for line in io::BufReader::new(infile).lines() {
+	for line in io::BufReader::new(infile).lines().enumerate() {
 		match line {
-			Ok(ln) => {
-				code.push(ln);
+			(i, Ok(ln)) => {
+				if !ln.trim().is_empty() {
+					code.push((i + 1, ln));
+				}
 			},
-			Err(_) => {},
+			(_, Err(_)) => {},
 		}
 	}
 
-	while program.line_number <= code.len() {
-		if !code[program.line_number - 1].trim().is_empty() {
-			let tokenized = match parser::tokenize_line(code[program.line_number - 1].clone()) {
-				Some(vec) => vec,
-				None => {
-					sb_panic!(program.line_number);
-				},
-			};
+	while program.line_internal < code.len() {
+		program.line_number = code[program.line_internal].0;
+		let tokenized = match parser::tokenize_line(code[program.line_internal].1.clone()) {
+			Some(vec) => vec,
+			None => {
+				sb_panic!(program.line_number);
+			},
+		};
 
-			if !tokenized.is_empty() {
-				parser::execute_token_vector(&mut program, tokenized);
-				if program.exit {
-					return;
-				}
+		if !tokenized.is_empty() {
+			parser::execute_token_vector(&mut program, tokenized);
+			if program.exit {
+				return;
 			}
 		}
 
-		if program.line_number < 1 || program.line_number > code.len() {
+		if program.line_internal >= code.len() {
 			sb_panic!(program.line_number);
 		}
 		
-		program.line_number += 1;
+		program.line_internal += 1;
 	}
 }
