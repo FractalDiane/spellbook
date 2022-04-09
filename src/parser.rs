@@ -458,7 +458,7 @@ fn execute_tokens(current: &Token, next: Option<&Token>, state: &mut ParserState
 					}
 				},
 				_ => {
-					sb_panic!(program.line_number);
+					sb_panic!("That doesn't seem like the correct way to start a sentence.", program.line_number);
 				},
 			}
 		},
@@ -473,14 +473,14 @@ fn execute_tokens(current: &Token, next: Option<&Token>, state: &mut ParserState
 									program.turn_to_page(index);
 								},
 								None => {
-									sb_panic!(program.line_number);
+									sb_panic!("The book didn't understand that.", program.line_number);
 								},
 							}
 
 							state.clear_cache();
 						},
 						_ => {
-							sb_panic!(program.line_number);
+							sb_panic!("Whatever you tried to write, it's complete nonsense.", program.line_number);
 						},
 					}
 				},
@@ -496,11 +496,11 @@ fn execute_tokens(current: &Token, next: Option<&Token>, state: &mut ParserState
 								state.cached_keyphrase = Some(Keyphrase::FromMemory);
 								state.status = ParseStateStatus::Top;
 							} else {
-								sb_panic!(program.line_number);
+								sb_panic!("Write what now?", program.line_number);
 							}
 						},
 						_ => {
-							sb_panic!(program.line_number);
+							sb_panic!("Write what now?", program.line_number);
 						},
 					}
 				},
@@ -512,7 +512,7 @@ fn execute_tokens(current: &Token, next: Option<&Token>, state: &mut ParserState
 							state.status = ParseStateStatus::Top;
 						},
 						_ => {
-							sb_panic!(program.line_number);
+							sb_panic!("Copy what now?", program.line_number);
 						}
 					}
 				},
@@ -530,7 +530,7 @@ fn execute_tokens(current: &Token, next: Option<&Token>, state: &mut ParserState
 											program.write_literal_value(ident.clone(), Some(val));
 										},
 										None => {
-											sb_panic!(program.line_number);
+											sb_panic!("That's definitely a heading you haven't written yet.", program.line_number);
 										},
 									}
 								},
@@ -539,12 +539,12 @@ fn execute_tokens(current: &Token, next: Option<&Token>, state: &mut ParserState
 									state.clear_cache();
 								},
 								_ => {
-									sb_panic!(program.line_number);
+									sb_panic!("Whatever you tried to write, it's complete nonsense.", program.line_number);
 								},
 							}
 						},
 						_ => {
-							sb_panic!(program.line_number);
+							sb_panic!("Whatever you tried to write, it's complete nonsense.", program.line_number);
 						},
 					}
 				},
@@ -557,7 +557,7 @@ fn execute_tokens(current: &Token, next: Option<&Token>, state: &mut ParserState
 						program.tear_out_page(false, false);
 						state.clear_cache();
 					} else {
-						sb_panic!(program.line_number);
+						sb_panic!("You can't throw that away!", program.line_number);
 					}
 				},
 				Keyphrase::AndPutItInTheDrawer => {
@@ -565,7 +565,7 @@ fn execute_tokens(current: &Token, next: Option<&Token>, state: &mut ParserState
 						program.tear_out_page(true, false);
 						state.clear_cache();
 					} else {
-						sb_panic!(program.line_number);
+						sb_panic!("The drawer does NOT want that in it.", program.line_number);
 					}
 				},
 				Keyphrase::AndTossItInTheCauldron => {
@@ -573,7 +573,7 @@ fn execute_tokens(current: &Token, next: Option<&Token>, state: &mut ParserState
 						program.tear_out_page(false, true);
 						state.clear_cache();
 					} else {
-						sb_panic!(program.line_number);
+						sb_panic!("The cauldron growls at you for merely thinking of putting that in it.", program.line_number);
 					}
 				},
 				Keyphrase::TakeOutAChapterFromTheDrawerAndPutItBack => {
@@ -591,7 +591,7 @@ fn execute_tokens(current: &Token, next: Option<&Token>, state: &mut ParserState
 							state.status = ParseStateStatus::Top;
 						},
 						_ => {
-							sb_panic!(program.line_number);
+							sb_panic!("Where'd you learn THAT spell?", program.line_number);
 						},
 					}
 				},
@@ -613,7 +613,7 @@ fn execute_tokens(current: &Token, next: Option<&Token>, state: &mut ParserState
 							}
 						},
 						_ => {
-							sb_panic!(program.line_number);
+							sb_panic!("", program.line_number);
 						}
 					}
 				},
@@ -630,12 +630,12 @@ fn execute_tokens(current: &Token, next: Option<&Token>, state: &mut ParserState
 									state.clear_cache();
 								},
 								_ => {
-									sb_panic!(program.line_number);
+									sb_panic!("", program.line_number);
 								}
 							}
 						},
 						_ => {
-							sb_panic!(program.line_number);
+							sb_panic!("", program.line_number);
 						}
 					}
 				},
