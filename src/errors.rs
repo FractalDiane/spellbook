@@ -12,6 +12,6 @@ pub struct SpellbookError {
 #[macro_export]
 macro_rules! sb_panic {
 	($line:expr) => {
-		std::panic::panic_any($line);
+		std::panic::panic_any($line)
 	};
 }
