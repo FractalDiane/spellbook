@@ -35,7 +35,7 @@ pub enum CauldronSpellResult {
 	JumpBack(usize),
 }
 
-pub enum CauldronMathMode {
+pub enum CauldronMixMode {
 	Add,
 	Sub,
 	Mul,
@@ -49,7 +49,7 @@ pub struct Cauldron {
 	spell_charge_amplifier: usize,
 	consecutive_amplifies: usize,
 
-	math_mode: CauldronMathMode,
+	mix_mode: CauldronMixMode,
 }
 
 impl Cauldron {
@@ -61,7 +61,7 @@ impl Cauldron {
 			spell_charge_amplifier: 1,
 			consecutive_amplifies: 0,
 
-			math_mode: CauldronMathMode::Add,
+			mix_mode: CauldronMixMode::Add,
 		}
 	}
 
@@ -94,11 +94,11 @@ impl Cauldron {
 						my_page.entry_names[i].push_str(&page.entry_names[i]);
 						match my_page.values[i] {
 							Some(ref current_val) => {
-								let result = match self.math_mode {
-									CauldronMathMode::Add => current_val.add(page.values[i].as_ref().unwrap().clone()),
-									CauldronMathMode::Sub => current_val.sub(page.values[i].as_ref().unwrap().clone()),
-									CauldronMathMode::Mul => current_val.mul(page.values[i].as_ref().unwrap().clone()),
-									CauldronMathMode::Div => current_val.div(page.values[i].as_ref().unwrap().clone()),
+								let result = match self.mix_mode {
+									CauldronMixMode::Add => current_val.add(page.values[i].as_ref().unwrap().clone()),
+									CauldronMixMode::Sub => current_val.sub(page.values[i].as_ref().unwrap().clone()),
+									CauldronMixMode::Mul => current_val.mul(page.values[i].as_ref().unwrap().clone()),
+									CauldronMixMode::Div => current_val.div(page.values[i].as_ref().unwrap().clone()),
 								};
 
 								match result {
@@ -172,19 +172,19 @@ impl Cauldron {
 			},
 
 			CauldronSpell::Entwinement => {
-				self.math_mode = CauldronMathMode::Add;
+				self.mix_mode = CauldronMixMode::Add;
 				Some(CauldronSpellResult::DoNothing)
 			},
 			CauldronSpell::Belittlement => {
-				self.math_mode = CauldronMathMode::Sub;
+				self.mix_mode = CauldronMixMode::Sub;
 				Some(CauldronSpellResult::DoNothing)
 			},
 			CauldronSpell::Reenactment => {
-				self.math_mode = CauldronMathMode::Mul;
+				self.mix_mode = CauldronMixMode::Mul;
 				Some(CauldronSpellResult::DoNothing)
 			},
 			CauldronSpell::Apportionment => {
-				self.math_mode = CauldronMathMode::Div;
+				self.mix_mode = CauldronMixMode::Div;
 				Some(CauldronSpellResult::DoNothing)
 			},
 

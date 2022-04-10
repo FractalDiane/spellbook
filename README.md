@@ -53,7 +53,7 @@ THIS WRITES A VALUE OF TRUE
 
 turn to chapter Hexes
 write true under my_bool
-THIS WRITES A VALUE OF 1
+THIS WRITES A VALUE OF ONE
 
 turn to chapter Illusions
 write "Hello" under my_string    ERROR! CAN'T CONVERT THAT
@@ -93,7 +93,7 @@ write "Hello, world!" under hello
 turn to chapter Hexes
 write 52 under some_number
 publish spellbook
-THIS PRINTS "HELLO, WORLD!" AND THEN 52
+THIS PRINTS HELLO, WORLD! AND THEN FIFTY-TWO
 ```
 
 Something else important to note is that published books need to be as perfectly wrapped up as possible, so by default your published spellbook will be terminated with a nice, fancy "THE END."
@@ -111,7 +111,7 @@ publish spellbook
 You can also sign individual chapters with whatever closing you'd like. By default, they're signed with a newline.
 
 ```
-THIS WRITES "HELLO!" THREE TIMES ON THE SAME LINE
+THIS WRITES HELLO! THREE TIMES ON THE SAME LINE
 
 turn to chapter Incantations
 write "Hello! " under hello
@@ -157,50 +157,12 @@ Something important to note is that this cauldron is exceptionally choosy, and w
 
 There are four different mixing modes:
 
-### Entwinement
-Values are combined. Numbers are added, and strings are concatenated onto each other.
-```
-turn to chapter Hexes
-write 5 under num_1
-tear out chapter and toss it in the cauldron
-write 3 under num_2
-tear out chapter and toss it in the cauldron
-CAULDRON PAGE NOW CONTAINS 8
-```
-
-### Belittlement
-Numbers are subtracted. If there is a string in the cauldron, mixing it with an integer will remove that many characters from it, and mixing it with another string will remove that substring from it.
-```
-turn to chapter Incantations
-write "impossible" under string
-tear out chapter and toss it in the cauldron
-write "im" under string
-tear out chapter and toss it in the cauldron
-CAULDRON NOW CONTAINS "POSSIBLE"
-```
-
-### Reenactment
-Numbers are multiplied. If there is a string in the cauldron, mixing it with an integer will repeat the string that many times.
-```
-turn to chapter Incantations
-write "Hello" under string
-tear out chapter and toss it in the cauldron
-turn to chapter Hexes
-write 4 under count
-tear out chapter and toss it in the cauldron
-CAULDRON NOW CONTAINS "HELLOHELLOHELLOHELLO"
-```
-
-### Apportionment
-Numbers are divided.
-```
-turn to chapter Illusions
-write 12.5 under num1
-tear out chapter and toss it in the cauldron
-write 3.1 under num2
-tear out chapter and toss it in the cauldron
-CAULDRON NOW CONTAINS 4.032
-```
+| Mixing Mode | Description |
+| ------------- | -------- |
+| Entwinement | Values are combined. Numbers are added, and strings are concatenated onto each other. |
+| Belittlement | Numbers are subtracted. If there is a string in the cauldron, mixing it with an integer will remove that many characters from it, and mixing it with another string will remove that substring from it. |
+| Reenactment | Numbers are multiplied. If there is a string in the cauldron, mixing it with an integer will repeat the string that many times. |
+| Apportionment | Numbers are divided. |
 
 The current mixing mode can be changed using the appropriate spell, discussed a bit later on.
 
@@ -242,7 +204,7 @@ The spells you can use are as follows:
 | Apportionment | Changes the cauldron's mixing mode to Apportionment. | +1 | Yes |
 | Amplify | Increases the charge amplifier by 1, making spells increase the charge by +1 more. If Amplify is cast three times in a row with no other non-Vacancy spells in-between, the cauldron will overload catastrophically. | +0 | No |
 | Diminish | Decreases the current charge by 1. | -1 | No |
-| Quelch | Resets the charge to 0 and the amplifier to 1. | Resets to 0 | No |
+| Squelch | Resets the charge to 0 and the amplifier to 1. | Resets to 0 | No |
 
 # Memorization
 

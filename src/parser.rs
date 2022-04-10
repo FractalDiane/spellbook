@@ -121,12 +121,9 @@ fn expect_subtokens(iter: &mut PeekMoreIterator<Iter<&str>>, subtokens: &[&str])
 pub fn tokenize_line(line: String) -> Option<Vec<Token>> {
 	let mut tokens = vec![];
 
-	let split = line.split_whitespace();
-	let nocaps = split.filter(|w|
-		!w.chars().all(|c| c.is_uppercase() || !c.is_alphanumeric()) || w.contains('"')
-	).collect::<Vec<&str>>().join(" ");
-
-	let split = split_line_with_quotes(nocaps);
+	let words = line.split_whitespace().peekable();
+	let nocomments = words.filter(|w| !w.chars().all(|c| c.is_uppercase() || (c.is_ascii_punctuation() && c != '"')));
+	let split = split_line_with_quotes(nocomments.collect::<Vec<&str>>().join(" "));
 	let vec = split.iter().map(|s| &**s).collect::<Vec<&str>>();
 	let mut subtokens = vec.iter().peekmore();
 	while let Some(st) = subtokens.next() {
@@ -356,30 +353,21 @@ pub fn execute_token_vector(program: &mut Program, tokens: Vec<Token>) {
 	
 	let mut state = ParserState::new();
 
-	if tokens.len() > 1 {
-		let mut prev_iter = tokens.iter();
-		prev_iter.next().unwrap();
-		for (current, next) in tokens.iter().zip(prev_iter) {
-			execute_tokens(current, Some(next), &mut state, program, false);
-		}
+	for token in &tokens {
+		execute_token(&token, &mut state, program);
+	}
 
-		while !state.is_cache_clear() {
-			execute_tokens(tokens.as_slice().last().unwrap(), None, &mut state, program, false);
-		}
-	} else {
-		execute_tokens(&tokens[0], None, &mut state, program, true);
+	while !state.is_cache_clear() {
+		execute_token(&tokens.last().unwrap(), &mut state, program);
 	}
 }
 
-fn execute_tokens(current: &Token, next: Option<&Token>, state: &mut ParserState, program: &mut Program, single_token: bool) {
+fn execute_token(current: &Token, state: &mut ParserState, program: &mut Program) {
 	match &state.status {
 		ParseStateStatus::Top => {
 			match current {
 				Token::Keyphrase(kp) => {
 					state.status = ParseStateStatus::Keyphrase(kp.clone());
-					if single_token {
-						execute_tokens(current, next, state, program, true);
-					}
 				},
 				_ => {
 					sb_panic!(program.line_number);
