@@ -49,18 +49,6 @@ pub enum Token {
 	Builtin(String),
 
 	Conditional,
-	Operator(Operator),
-}
-
-#[derive(Debug, PartialEq, Clone)]
-pub enum Operator {
-	Sum,
-	Difference,
-	Product,
-	Quotient,
-	Remainder,
-	Concatenation,
-	And,
 }
 
 const fn parse_escape_character(chr: char) -> Option<char> {
@@ -132,9 +120,11 @@ fn expect_subtokens(iter: &mut PeekMoreIterator<Iter<&str>>, subtokens: &[&str])
 
 pub fn tokenize_line(line: String) -> Option<Vec<Token>> {
 	let mut tokens = vec![];
-	let nocaps = line.split_whitespace().
-		filter(|w| !w.chars().all(|c| c.is_uppercase() || !c.is_alphanumeric()) || w.contains('"'))
-		.collect::<Vec<&str>>().join(" ");
+
+	let split = line.split_whitespace();
+	let nocaps = split.filter(|w|
+		!w.chars().all(|c| c.is_uppercase() || !c.is_alphanumeric()) || w.contains('"')
+	).collect::<Vec<&str>>().join(" ");
 
 	let split = split_line_with_quotes(nocaps);
 	let vec = split.iter().map(|s| &**s).collect::<Vec<&str>>();
@@ -252,8 +242,7 @@ pub fn tokenize_line(line: String) -> Option<Vec<Token>> {
 						}
 					},
 					_ => {
-						let token = Token::Operator(Operator::And);
-						tokens.push(token);
+						return None;
 					},
 				}
 			},
@@ -283,43 +272,6 @@ pub fn tokenize_line(line: String) -> Option<Vec<Token>> {
 			"if" => {
 				let token = Token::Conditional;
 				tokens.push(token);
-			},
-
-			"sum" => {
-				if expect_subtokens(&mut subtokens, &["of"]) {
-					let token = Token::Operator(Operator::Sum);
-					tokens.push(token);
-				}
-			},
-			"difference" => {
-				if expect_subtokens(&mut subtokens, &["of"]) {
-					let token = Token::Operator(Operator::Difference);
-					tokens.push(token);
-				}
-			},
-			"product" => {
-				if expect_subtokens(&mut subtokens, &["of"]) {
-					let token = Token::Operator(Operator::Product);
-					tokens.push(token);
-				}
-			},
-			"quotient" => {
-				if expect_subtokens(&mut subtokens, &["of"]) {
-					let token = Token::Operator(Operator::Quotient);
-					tokens.push(token);
-				}
-			},
-			"remainder" => {
-				if expect_subtokens(&mut subtokens, &["of"]) {
-					let token = Token::Operator(Operator::Remainder);
-					tokens.push(token);
-				}
-			},
-			"concatenation" => {
-				if expect_subtokens(&mut subtokens, &["of"]) {
-					let token = Token::Operator(Operator::Concatenation);
-					tokens.push(token);
-				}
 			},
 
 			_ => {

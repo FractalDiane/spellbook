@@ -1,17 +1,17 @@
 turn to chapter Hexes
 sign acknowledgements page with ""
 write 99 under bottles
-cast Vacancy on the cauldron 		ONE
+cast Vacancy on the cauldron 
 memorize first entry
 tear out chapter and throw it in the trash
 write from memory under bottles_next
 turn to chapter Presages
 write from memory under done_yet
 tear out chapter and toss it in the cauldron
-cast Antipodize on the cauldron		TWO
-cast Diminish on the cauldron		ONE
+cast Antipodize on the cauldron
+cast Diminish on the cauldron
 cast Judgement on the cauldron
-slam spellbook shut					TWO
+slam spellbook shut
 knock over cauldron
 turn to chapter Hexes
 tear out chapter and toss it in the cauldron
@@ -29,8 +29,8 @@ tear out chapter and put it in the drawer
 write from memory under count
 write 1 under cmp
 tear out chapter and toss it in the cauldron
-cast Juxtapose on the cauldron		THREE
-cast Diminish on the cauldron		TWO
+cast Juxtapose on the cauldron
+cast Diminish on the cauldron
 knock over cauldron
 turn to chapter Presages
 pick up chapter off the floor and put it back
@@ -39,14 +39,14 @@ tear out chapter and throw it in the trash
 write from memory under is_not_one
 tear out chapter and toss it in the cauldron
 turn to chapter Incantations
-cast Diminish on the cauldron		ONE
+cast Diminish on the cauldron
 cast Judgement on the cauldron
-write " bottle" under line2			TWO
-cast Antipodize on the cauldron		THREE
-cast Diminish on the cauldron		TWO
-cast Diminish on the cauldron		ONE
+write " bottle" under line2
+cast Antipodize on the cauldron
+cast Diminish on the cauldron
+cast Diminish on the cauldron
 cast Judgement on the cauldron
-write " bottles" under line2		TWO
+write " bottles" under line2
 turn to chapter Hexes
 take out a chapter from the drawer and put it back
 turn to chapter Incantations
@@ -58,14 +58,14 @@ write from memory under is_not_zero
 knock over cauldron
 tear out chapter and toss it in the cauldron
 turn to chapter Incantations
-cast Diminish on the cauldron			ONE
+cast Diminish on the cauldron
 cast Judgement on the cauldron
-write from memory under line3		TWO
-cast Antipodize on the cauldron		THREE
-cast Diminish on the cauldron		TWO
-cast Diminish on the cauldron		ONE
+write from memory under line3
+cast Antipodize on the cauldron
+cast Diminish on the cauldron
+cast Diminish on the cauldron
 cast Judgement on the cauldron
-write "No" under line3				TWO
+write "No" under line3
 tear out chapter and put it in the drawer
 
 write "Take one down, pass it around,\n" under line3andahalf
@@ -80,8 +80,8 @@ tear out chapter and put it in the drawer
 write from memory under count
 write 1 under cmp
 tear out chapter and toss it in the cauldron
-cast Juxtapose on the cauldron		THREE
-cast Diminish on the cauldron		TWO
+cast Juxtapose on the cauldron
+cast Diminish on the cauldron
 knock over cauldron
 turn to chapter Presages
 pick up chapter off the floor and put it back
@@ -90,14 +90,14 @@ tear out chapter and throw it in the trash
 write from memory under is_not_one
 tear out chapter and toss it in the cauldron
 turn to chapter Incantations
-cast Diminish on the cauldron		ONE
+cast Diminish on the cauldron
 cast Judgement on the cauldron
-write " bottle" under noun			TWO
-cast Antipodize on the cauldron		THREE
-cast Diminish on the cauldron		TWO
-cast Diminish on the cauldron		ONE
+write " bottle" under noun
+cast Antipodize on the cauldron
+cast Diminish on the cauldron
+cast Diminish on the cauldron
 cast Judgement on the cauldron
-write " bottles" under noun			TWO
+write " bottles" under noun
 knock over cauldron
 turn to chapter Hexes
 take out a chapter from the drawer and put it back
@@ -109,14 +109,14 @@ turn to chapter Presages
 write from memory under is_not_zero
 tear out chapter and toss it in the cauldron
 turn to chapter Incantations
-cast Diminish on the cauldron		ONE
+cast Diminish on the cauldron
 cast Judgement on the cauldron
-write from memory under start		TWO
-cast Antipodize on the cauldron		THREE
-cast Diminish on the cauldron		TWO
-cast Diminish on the cauldron		ONE
+write from memory under start
+cast Antipodize on the cauldron
+cast Diminish on the cauldron
+cast Diminish on the cauldron
 cast Judgement on the cauldron
-write "No" under start				TWO
+write "No" under start
 knock over cauldron
 tear out chapter and toss it in the cauldron
 take out a chapter from the drawer and put it back
