@@ -1,2 +1,0 @@
-By default, print "THE END" at the end of the publish, or "Q.E.D." if it only prints numbers
-Strings turn into "something something something" etc. at the end when not fully memorized

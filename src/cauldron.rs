@@ -9,16 +9,18 @@ use std::io;
 
 #[derive(Clone, PartialEq)]
 pub enum CauldronSpell {
-	Entwine,
 	Coadjuvancy,
-	Stoachastize,
-	Redesign,
 	Judgement,
+	Reverberate,
+
+	Entwinement,
+	Belittlement,
+	Reenactment,
+	Apportionment,
 
 	Antipodize,
 	Juxtapose,
-
-	Reverberate,
+	
 	Amplify,
 	Squelch,
 	Diminish,
@@ -33,20 +35,33 @@ pub enum CauldronSpellResult {
 	JumpBack(usize),
 }
 
+pub enum CauldronMathMode {
+	Add,
+	Sub,
+	Mul,
+	Div,
+}
+
 pub struct Cauldron {
 	page: Option<Page>,
+
 	spell_charge: usize,
 	spell_charge_amplifier: usize,
 	consecutive_amplifies: usize,
+
+	math_mode: CauldronMathMode,
 }
 
 impl Cauldron {
 	pub fn new() -> Self {
 		Self{
 			page: None,
+
 			spell_charge: 0,
 			spell_charge_amplifier: 1,
 			consecutive_amplifies: 0,
+
+			math_mode: CauldronMathMode::Add,
 		}
 	}
 
@@ -79,9 +94,16 @@ impl Cauldron {
 						my_page.entry_names[i].push_str(&page.entry_names[i]);
 						match my_page.values[i] {
 							Some(ref current_val) => {
-								match current_val.add(page.values[i].as_ref().unwrap().clone()) {
-									Some(result) => {
-										my_page.values[i] = Some(result);
+								let result = match self.math_mode {
+									CauldronMathMode::Add => current_val.add(page.values[i].as_ref().unwrap().clone()),
+									CauldronMathMode::Sub => current_val.sub(page.values[i].as_ref().unwrap().clone()),
+									CauldronMathMode::Mul => current_val.mul(page.values[i].as_ref().unwrap().clone()),
+									CauldronMathMode::Div => current_val.div(page.values[i].as_ref().unwrap().clone()),
+								};
+
+								match result {
+									Some(success) => {
+										my_page.values[i] = Some(success);
 									},
 									None => {
 										return false;
@@ -148,6 +170,24 @@ impl Cauldron {
 					None => None,
 				}
 			},
+
+			CauldronSpell::Entwinement => {
+				self.math_mode = CauldronMathMode::Add;
+				Some(CauldronSpellResult::DoNothing)
+			},
+			CauldronSpell::Belittlement => {
+				self.math_mode = CauldronMathMode::Sub;
+				Some(CauldronSpellResult::DoNothing)
+			},
+			CauldronSpell::Reenactment => {
+				self.math_mode = CauldronMathMode::Mul;
+				Some(CauldronSpellResult::DoNothing)
+			},
+			CauldronSpell::Apportionment => {
+				self.math_mode = CauldronMathMode::Div;
+				Some(CauldronSpellResult::DoNothing)
+			},
+
 			CauldronSpell::Antipodize => {
 				match self.page {
 					Some(ref mut pg) => {
@@ -223,8 +263,6 @@ impl Cauldron {
 			CauldronSpell::Vacation => {
 				Some(CauldronSpellResult::DoNothing)
 			},
-
-			_ => None,
 		}
 	}
 }

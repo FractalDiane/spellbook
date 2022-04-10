@@ -104,6 +104,19 @@ impl Variant {
 			Some(Variant::Integer(left - right))
 		} else if let (Some(left), Some(right)) = (self.try_unwrap_float(), rhs.try_unwrap_float()) {
 			Some(Variant::Float(left - right))
+		} else if let (Some(left), Some(right)) = (self.try_unwrap_string(), rhs.try_unwrap_int()) {
+			if right >= 0 {
+				Some(Variant::Str(left[..left.len() - right as usize].to_string()))
+			} else {
+				None
+			}
+		} else if let (Some(mut left), Some(right)) = (self.try_unwrap_string(), rhs.try_unwrap_string()) {
+			if left.contains(&right) {
+				left.remove_matches(&right);
+				Some(Variant::Str(left))
+			} else {
+				None
+			}
 		} else {
 			None
 		}
@@ -114,6 +127,12 @@ impl Variant {
 			Some(Variant::Integer(left * right))
 		} else if let (Some(left), Some(right)) = (self.try_unwrap_float(), rhs.try_unwrap_float()) {
 			Some(Variant::Float(left * right))
+		} else if let (Some(left), Some(right)) = (self.try_unwrap_string(), rhs.try_unwrap_int()) {
+			if right >= 0 {
+				Some(Variant::Str(left.repeat(right as usize)))
+			} else {
+				None
+			}
 		} else {
 			None
 		}
@@ -129,23 +148,12 @@ impl Variant {
 		}
 	}
 
-	pub fn rem(&self, rhs: Variant) -> Option<Variant> {
-		if let (Some(left), Some(right)) = (self.try_unwrap_int(), rhs.try_unwrap_int()) {
-			Some(Variant::Integer(left % right))
-		} else if let (Some(left), Some(right)) = (self.try_unwrap_float(), rhs.try_unwrap_float()) {
-			Some(Variant::Float(left % right))
-		} else {
-			None
-		}
-	}
-
 	pub fn inverted(&self) -> Option<Variant> {
 		match self {
 			Variant::Boolean(b) => Some(Variant::Boolean(!b)),
 			Variant::Integer(i) => Some(Variant::Integer(-i)),
 			Variant::Float(f) => Some(Variant::Float(-f)),
 			Variant::Str(s) => Some(Variant::Str(s.chars().rev().collect())),
-			_ => None,
 		}
 	}
 }

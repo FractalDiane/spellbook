@@ -21,9 +21,11 @@ lazy_static! {
 		hashmap!{
 			"Coadjuvancy" => CauldronSpell::Coadjuvancy,
 			"Judgement" => CauldronSpell::Judgement,
-			"Entwine" => CauldronSpell::Entwine,
-			"Stoachastize" => CauldronSpell::Stoachastize,
-			"Redesign" => CauldronSpell::Redesign,
+
+			"Entwinement" => CauldronSpell::Entwinement,
+			"Belittlement" => CauldronSpell::Belittlement,
+			"Reenactment" => CauldronSpell::Reenactment,
+			"Apportionment" => CauldronSpell::Apportionment,
 
 			"Reverberate" => CauldronSpell::Reverberate,
 			"Amplify" => CauldronSpell::Amplify,

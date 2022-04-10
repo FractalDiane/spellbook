@@ -65,21 +65,6 @@ impl Program {
 		}
 	}
 
-	pub fn change_line_by(&mut self, by: &Variant) {
-		match by {
-			Variant::Integer(int) => {
-				if *int >= 0 {
-					self.line_internal += *int as usize;
-				} else {
-					self.line_internal -= -*int as usize;
-				}
-			},
-			_ => {
-				sb_panic!(self.line_number);
-			}
-		}
-	}
-
 	pub fn is_totally_empty(&self) -> bool {
 		!self.pages.iter().any(|p| p.has_any_contents())
 	}

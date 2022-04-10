@@ -4,6 +4,7 @@
 // *~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*
 
 #![feature(iter_advance_by)]
+#![feature(string_remove_matches)]
 
 mod cauldron;
 mod constants;

@@ -22,14 +22,9 @@ pub enum Keyphrase {
 	TakeOutAChapterFromTheDrawerAndPutItBack,
 	PickUpChapterOffTheFloorAndPutItBack,
 
-	//WriteEntry,
-	//WithValue,
 	Write,
 	Under,
 	Copy,
-	//WithThe,
-	//WithTheValueOf,
-	FromDivineIntervention,
 	Entry,
 
 	Memorize,
@@ -39,15 +34,9 @@ pub enum Keyphrase {
 	OnTheCauldron,
 	KnockOverCauldron,
 
-	SkipTheNext,
-	RepeatTheLast,
-	//Steps,
-
-	//PublishSpellbookTo,
 	PublishSpellbook,
 	SignChapterWith,
 	SignAcknowledgementsPageWith,
-	//WrappedUpWith,
 
 	SlamSpellbookShut,
 }
@@ -221,28 +210,11 @@ pub fn tokenize_line(line: String) -> Option<Vec<Token>> {
 				}
 			},
 			"from" => {
-				if expect_subtokens(&mut subtokens, &["divine", "intervention"]) {
-					let token = Token::Keyphrase(Keyphrase::FromDivineIntervention);
-					tokens.push(token);
-				} else if expect_subtokens(&mut subtokens, &["memory"]) {
+				if expect_subtokens(&mut subtokens, &["memory"]) {
 					let token = Token::Keyphrase(Keyphrase::FromMemory);
 					tokens.push(token);
 				} else {
 					return None;
-				}
-			},
-			"skip" => {
-				if expect_subtokens(&mut subtokens, &["the", "next"]) {
-					let token = Token::Keyphrase(Keyphrase::SkipTheNext);
-					tokens.push(token);
-				} else {
-					return None;
-				}
-			},
-			"repeat" => {
-				if expect_subtokens(&mut subtokens, &["the", "last"]) {
-					let token = Token::Keyphrase(Keyphrase::RepeatTheLast);
-					tokens.push(token);
 				}
 			},
 			"publish" => {
@@ -621,20 +593,6 @@ fn execute_tokens(current: &Token, next: Option<&Token>, state: &mut ParserState
 					program.knock_over_cauldron();
 					state.clear_cache();
 				},
-				Keyphrase::SkipTheNext => {
-					match current {
-						Token::Literal(lit) => {
-							state.cached_literal = Some(lit.clone());
-							state.cached_keyphrase = Some(Keyphrase::SkipTheNext);
-							if next.is_none() {
-								program.change_line_by(&lit);
-							}
-						},
-						_ => {
-							sb_panic!(program.line_number);
-						}
-					}
-				},
 				Keyphrase::PublishSpellbook => {
 					program.publish(false, String::new());
 					state.clear_cache();
@@ -714,58 +672,3 @@ fn execute_tokens(current: &Token, next: Option<&Token>, state: &mut ParserState
 		},
 	}
 }
-
-#[test]
-fn test_split_line_with_quotes() {
-	assert_eq!(
-		split_line_with_quotes(r#"write entry hello with value "Hello, world!" and other stuff"#.into()),
-		vec!["write".to_string(), "entry".into(), "hello".into(), "with".into(), "value".into(), 
-				r#""Hello, world!""#.into(), "and".into(), "other".into(), "stuff".into(),
-		],
-	);
-}
-
-#[test]
-fn test_tokenize() {
-	type T = Token;
-	type K = Keyphrase;
-
-	assert_eq!(split_line_with_quotes(r#"Hello!\n"#.into()), vec!["Hello!\n"]);
-	assert_eq!(split_line_with_quotes(r#"These \xare \finvalid \yescapes"#.into()), vec!["These", "are", "invalid", "escapes"]);
-	
-	assert_eq!(tokenize_line("turn to chapter".into()), Some(vec![T::Keyphrase(K::TurnToChapter)]));
-	assert_eq!(tokenize_line("turn to page".into()), None);
-
-	assert_eq!(tokenize_line("turn to chapter Incantations".into()), Some(vec![
-		T::Keyphrase(K::TurnToChapter),
-		T::Builtin("Incantations".into()),
-	]));
-
-	assert_eq!(
-		tokenize_line(r#""Hello, world!""#.into()),
-		Some(vec![T::Literal(Variant::Str(r#"Hello, world!"#.into()))]),
-	);
-}
-
-/* 
-#[test]
-fn test_operations() {
-	type V = Variant;
-
-	let mut state = ParserState::new();
-	state.cached_operand_list = vec![V::Integer(5), V::Integer(3)];
-	assert_eq!(state.perform_operation(&Operator::Sum), Some(V::Integer(8)));
-	state.cached_operand_list = vec![V::Integer(5), V::Integer(3), V::Integer(17)];
-	assert_eq!(state.perform_operation(&Operator::Sum), Some(V::Integer(25)));
-	state.cached_operand_list = vec![V::Integer(5), V::Integer(3), V::Float(12.7)];
-	assert_eq!(state.perform_operation(&Operator::Sum), None);
-
-	state.cached_operand_list = vec![V::Integer(32), V::Integer(8), V::Integer(8)];
-	assert_eq!(state.perform_operation(&Operator::Difference), Some(V::Integer(16)));
-	state.cached_operand_list = vec![V::Integer(5), V::Integer(60)];
-	assert_eq!(state.perform_operation(&Operator::Difference), Some(V::Integer(-55)));
-
-	state.cached_operand_list = vec![V::Str("Hello ".into()), V::Str("there".into())];
-	assert_eq!(state.perform_operation(&Operator::Concatenation), Some(V::Str("Hello there".into())));
-}
-*/
