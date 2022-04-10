@@ -2,7 +2,7 @@
 
 Welcome, aspiring witch! If you're reading this, you must have a knack for magic, and you must be interested in the world of spellbook authoring and publishing. Consequently, it appears you're also interested in strange programming languages that make no sense from a practical standpoint. That's why **SPELLBOOK** is the language for you!
 
-Spellbook is an esoteric programming language based around the magical shenanigans of a financially-challenged witch writing a book of spells. You have some useful, if exasperatingly limited, tools at your disposal, alongside a collection of spells to help you get the job done and publish your spellbook. [WRITE MORE HERE]
+Spellbook is an esoteric programming language based around the magical shenanigans of a financially-challenged witch writing a book of spells. You have some useful, if exasperatingly limited, tools at your disposal, alongside a collection of spells to help you get the job done and publish your spellbook.
 
 # Syntax
 
@@ -206,7 +206,7 @@ take out chapter from the cauldron and put it back
 
 Note that just like when putting back a chapter from the drawer, the page's contents will be automagically converted to the current chapter's type if it doesn't match.
 
-The cauldron can also be knocked over to get rid of its contents immediately.
+The cauldron can also be knocked over to get rid of its contents without putting them back.
 ```
 knock over cauldron
 ```
