@@ -9,12 +9,11 @@ use std::collections::HashMap;
 
 use crate::cauldron::CauldronSpell;
 
-pub const BUILTINS_CHAPTERS: [&'static str; 5] = [
+pub const BUILTINS_CHAPTERS: [&'static str; 4] = [
 	"Presages",
 	"Hexes",
 	"Illusions",
 	"Incantations",
-	"Recipes",
 ];
 
 lazy_static! {

@@ -11,7 +11,6 @@ pub enum PageType {
 	Integer,
 	Float,
 	Str,
-	Routine,
 }
 
 #[derive(Clone)]
@@ -19,6 +18,7 @@ pub struct Page {
 	pub entry_names: [String; 3],
 	pub values: [Option<Variant>; 3],
 	pub signature: String,
+	pub changed_signature: bool,
 
 	pub page_type: PageType,
 	write_index: usize,
@@ -29,7 +29,8 @@ impl Page {
 		Self{
 			entry_names: [String::with_capacity(10), String::with_capacity(10), String::with_capacity(10)],
 			values: [None, None, None],
-			signature: String::new(),
+			signature: "\n".into(),
+			changed_signature: false,
 			page_type,
 			write_index: 0,
 		}
@@ -71,9 +72,6 @@ impl Page {
 					PageType::Str => {
 						Variant::Str(val.to_string())
 					},
-					PageType::Routine => {
-						Variant::Routine(|_| {})
-					},
 				};
 
 				self.values[ind] = Some(value_to_write);
@@ -105,5 +103,6 @@ impl Page {
 		}
 
 		self.write_index = 0;
+		self.changed_signature = false;
 	}
 }

@@ -14,7 +14,7 @@ use std::fs::OpenOptions;
 use std::io::{self, Write};
 
 pub struct Program {
-	pages: [Page; 5],
+	pages: [Page; 4],
 	cauldron: Cauldron,
 
 	spell_line_stack: Vec<(usize, usize)>,
@@ -39,8 +39,7 @@ pub struct Program {
 impl Program {
 	pub fn new(debug_mode: bool) -> Self {
 		let pages = [Page::new(PageType::Boolean), Page::new(PageType::Integer),
-					Page::new(PageType::Float),Page::new(PageType::Str),
-					Page::new(PageType::Routine)];
+					Page::new(PageType::Float),Page::new(PageType::Str)];
 		
 		Self{
 			pages,
@@ -76,7 +75,7 @@ impl Program {
 				}
 			},
 			_ => {
-				sb_panic!("You failed a class on discrete mathematics and tried counting in non-integers.", self.line_number);
+				sb_panic!(self.line_number);
 			}
 		}
 	}
@@ -103,17 +102,17 @@ impl Program {
 
 	pub fn write_literal_value(&mut self, name: String, value: Option<Variant>) {
 		if !self.can_write_to_page(self.current_page, &name) {
-			sb_panic!("The page hissed at you angrily and refused to let you write in it.", self.line_number);
+			sb_panic!(self.line_number);
 		}
 
 		if !self.pages[self.current_page].write_value(name, value, false, 0) {
-			sb_panic!("The page hissed at you angrily and refused to let you write in it.", self.line_number);
+			sb_panic!(self.line_number);
 		}
 	}
 
 	pub fn write_memory_value(&mut self, name: String) {
 		if !self.can_write_to_page(self.current_page, &name) {
-			sb_panic!("The page hissed at you angrily and refused to let you write in it.", self.line_number);
+			sb_panic!(self.line_number);
 		}
 
 		let mut rng = thread_rng();
@@ -164,12 +163,12 @@ impl Program {
 				_ => Some(val.clone()),
 			},
 			None => {
-				sb_panic!("Can't write what you haven't memorized!", self.line_number);
+				sb_panic!(self.line_number);
 			},
 		};
 
 		if !self.pages[self.current_page].write_value(name, new_value, false, 0) {
-			sb_panic!("The page hissed at you angrily and refused to let you write in it.", self.line_number);
+			sb_panic!(self.line_number);
 		}
 	}
 
@@ -197,13 +196,13 @@ impl Program {
 				self.line_internal = match self.spell_line_stack.get(charge) {
 					Some(line) => line.0 - 1,
 					None => {
-						sb_panic!("You magicked so hard that you flew off the instructions page.", self.line_number);
+						sb_panic!(self.line_number);
 					},
 				};
 
 				for _ in charge..self.spell_line_stack.len() - 1 {
 					self.cauldron.decrease_charge(true, self.spell_line_stack.last().unwrap_or_else(||
-						sb_panic!("You had more charge than you cast spells. Not sure how that happened!", self.line_number)
+						sb_panic!(self.line_number)
 					).1);
 					self.spell_line_stack.remove(charge + 1);
 				}
@@ -212,7 +211,7 @@ impl Program {
 				return;
 			},
 			None => {
-				sb_panic!("The spell fizzled and did nothing.", self.line_number);
+				sb_panic!(self.line_number);
 			},
 		}
 
@@ -224,9 +223,18 @@ impl Program {
 		self.floor = self.cauldron.knock_over();
 	}
 
+	pub fn sign_page(&mut self, with: String) {
+		if self.pages[self.current_page].changed_signature {
+			sb_panic!(self.line_number);
+		}
+
+		self.pages[self.current_page].signature = with;
+		self.pages[self.current_page].changed_signature = true;
+	}
+
 	pub fn publish(&self, not_console: bool, target: String) {
 		let mut output = String::with_capacity(100);
-		for p in 0..5 {
+		for p in 0..4 {
 			for v in 0..3 {
 				let concat = match &self.pages[p].values[v] {
 					Some(val) => val.print(),
@@ -235,11 +243,9 @@ impl Program {
 
 				output.push_str(&concat);
 				if !concat.is_empty() {
-					output.push('\n');
+					output.push_str(&self.pages[p].signature);
 				}
 			}
-
-			output.push_str(&self.pages[p].signature);
 		}
 
 		let signature = if self.use_custom_signature { self.custom_signature.clone() } else {
@@ -252,22 +258,22 @@ impl Program {
 
 		if !not_console {
 			print!("{}{}", output, signature);
-			io::stdout().flush().unwrap_or_else(|_| sb_panic!("You tried to publish with a nonexistent publisher.", self.line_number));
+			io::stdout().flush().unwrap_or_else(|_| sb_panic!(self.line_number));
 		} else {
 			let mut outfile = OpenOptions::new()
 				.create(true)
 				.write(true)
 				.append(true)
 				.open(&target)
-				.unwrap_or_else(|_| sb_panic!("You tried to publish with a nonexistent publisher.", self.line_number));
+				.unwrap_or_else(|_| sb_panic!(self.line_number));
 
-			write!(outfile, "{}{}", output, signature).unwrap_or_else(|_| sb_panic!("The publisher rejected you for... some reason!", self.line_number));
+			write!(outfile, "{}{}", output, signature).unwrap_or_else(|_| sb_panic!(self.line_number));
 		}
 	}
 
 	pub fn tear_out_page(&mut self, put_in_drawer: bool, put_in_cauldron: bool) {
 		if !self.turned_to_any_page {
-			sb_panic!("You got so excited about writing something that you forgot to open the book first.", self.line_number);
+			sb_panic!(self.line_number);
 		}
 
 		if put_in_drawer {
@@ -276,7 +282,7 @@ impl Program {
 
 		if put_in_cauldron {
 			if !self.cauldron.add_page(&self.pages[self.current_page]) {
-				sb_panic!("The cauldron got angry and spit out your chapter!", self.line_number);
+				sb_panic!(self.line_number);
 			}
 		}
 		
@@ -285,7 +291,7 @@ impl Program {
 
 	pub fn put_back_page(&mut self, from_drawer: bool) {
 		if !self.turned_to_any_page {
-			sb_panic!("You can't put a page back into a closed book.", self.line_number);
+			sb_panic!(self.line_number);
 		}
 
 		let page = if from_drawer {
@@ -294,21 +300,21 @@ impl Program {
 					pg.clone()
 				},
 				None => {
-					sb_panic!("The drawer appears to be conspicuously vacant.", self.line_number);
+					sb_panic!(self.line_number);
 				},
 			}
 		} else {
 			match &self.floor {
 				Some(pg) => pg.clone(),
 				None => {
-					sb_panic!("Unfortunately, the floor is spotless.", self.line_number);
+					sb_panic!(self.line_number);
 				}
 			}
 		};
 		
 		for i in 0..3 {
 			if !self.pages[self.current_page].write_value(page.entry_names[i].clone(), page.values[i].clone(), true, i) {
-				sb_panic!("The page hissed at you angrily and refused to let you write in it.", self.line_number);
+				sb_panic!(self.line_number);
 			}
 		}
 	}

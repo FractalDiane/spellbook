@@ -3,6 +3,7 @@
 //           BY DIANE SPARKS
 // *~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*
 
+#[allow(unused)]
 pub struct SpellbookError {
 	pub message: String,
 	pub line: usize,
@@ -10,9 +11,7 @@ pub struct SpellbookError {
 
 #[macro_export]
 macro_rules! sb_panic {
-	($message:literal, $line:expr) => {
-		//std::panic::panic_any(crate::errors::SpellbookError{message: $message.to_string(), line: $line});
-		//panic!();
+	($line:expr) => {
 		std::panic::panic_any($line);
 	};
 }

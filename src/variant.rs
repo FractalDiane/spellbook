@@ -9,7 +9,6 @@ pub enum Variant {
 	Integer(i64),
 	Float(f64),
 	Str(String),
-	Routine(fn(Variant) -> ()),
 }
 
 impl Variant {
@@ -47,7 +46,6 @@ impl Variant {
 			Variant::Integer(i) => i.to_string(),
 			Variant::Float(f) => f.to_string(),
 			Variant::Str(s) => s.to_string(),
-			Variant::Routine(_) => "BLAH BLAH BLAH".into(),
 		}
 	}
 
@@ -57,9 +55,6 @@ impl Variant {
 			Variant::Integer(i) => *i != 0,
 			Variant::Float(f) => *f != 0.0,
 			Variant::Str(s) => !s.is_empty(),
-			Variant::Routine(_) => {
-				panic!();
-			}
 		}
 	}
 
@@ -69,9 +64,6 @@ impl Variant {
 			Variant::Integer(i) => Some(*i),
 			Variant::Float(f) => Some(*f as i64),
 			Variant::Str(s) => s.parse::<i64>().ok(),
-			Variant::Routine(_) => {
-				panic!();
-			}
 		}
 	}
 
@@ -81,9 +73,6 @@ impl Variant {
 			Variant::Integer(i) => Some(*i as f64),
 			Variant::Float(f) => Some(*f),
 			Variant::Str(s) => s.parse::<f64>().ok(),
-			Variant::Routine(_) => {
-				panic!();
-			}
 		}
 	}
 
@@ -93,9 +82,6 @@ impl Variant {
 			Variant::Integer(i) => i.to_string(),
 			Variant::Float(f) => f.to_string(),
 			Variant::Str(s) => s.to_string(),
-			Variant::Routine(_) => {
-				panic!();
-			}
 		}
 	}
 
@@ -148,14 +134,6 @@ impl Variant {
 			Some(Variant::Integer(left % right))
 		} else if let (Some(left), Some(right)) = (self.try_unwrap_float(), rhs.try_unwrap_float()) {
 			Some(Variant::Float(left % right))
-		} else {
-			None
-		}
-	}
-
-	pub fn concat(&self, rhs: Variant) -> Option<Variant> {
-		if let (Some(left), Some(right)) = (self.try_unwrap_string(), rhs.try_unwrap_string()) {
-			Some(Variant::Str(left + &right))
 		} else {
 			None
 		}
