@@ -17,8 +17,7 @@ turn to chapter Hexes
 tear out chapter and toss it in the cauldron
 write -1 under minus
 tear out chapter and toss it in the cauldron
-knock over cauldron
-pick up chapter off the floor and put it back
+take out chapter from the cauldron and put it back
 write from memory under bottles_current
 turn to chapter Incantations
 write " of beer on the wall.\n\n" under line1
@@ -31,9 +30,8 @@ write 1 under cmp
 tear out chapter and toss it in the cauldron
 cast Juxtapose on the cauldron
 cast Diminish on the cauldron
-knock over cauldron
 turn to chapter Presages
-pick up chapter off the floor and put it back
+take out chapter from the cauldron and put it back
 memorize third entry
 tear out chapter and throw it in the trash
 write from memory under is_not_one
@@ -82,9 +80,8 @@ write 1 under cmp
 tear out chapter and toss it in the cauldron
 cast Juxtapose on the cauldron
 cast Diminish on the cauldron
-knock over cauldron
 turn to chapter Presages
-pick up chapter off the floor and put it back
+take out chapter from the cauldron and put it back
 memorize third entry
 tear out chapter and throw it in the trash
 write from memory under is_not_one
@@ -125,28 +122,24 @@ tear out chapter and throw it in the trash
 write "" under blank
 write from memory under noun
 tear out chapter and toss it in the cauldron
-knock over cauldron
-pick up chapter off the floor and put it back
+take out chapter from the cauldron and put it back
 memorize second entry
 tear out chapter and toss it in the cauldron
 write from memory under line5
 tear out chapter and put it in the drawer
-knock over cauldron
-pick up chapter off the floor and put it back
+take out chapter from the cauldron and put it back
 memorize first entry
 tear out chapter and toss it in the cauldron
 write from memory under line6
 tear out chapter and put it in the drawer
 write " of beer on the wall,\n" under line7
 tear out chapter and put it in the drawer
-knock over cauldron
-pick up chapter off the floor and put it back
+take out chapter from the cauldron and put it back
 memorize second entry
 tear out chapter and toss it in the cauldron
 write from memory under line8
 tear out chapter and put it in the drawer
-knock over cauldron
-pick up chapter off the floor and put it back
+take out chapter from the cauldron and put it back
 memorize first entry
 tear out chapter and throw it in the trash
 write from memory under line9
@@ -170,8 +163,7 @@ take out a chapter from the drawer and put it back
 tear out chapter and toss it in the cauldron
 take out a chapter from the drawer and put it back
 tear out chapter and toss it in the cauldron
-knock over cauldron
-pick up chapter off the floor and put it back
+take out chapter from the cauldron and put it back
 turn to chapter Hexes
 tear out chapter and put it in the drawer
 publish spellbook

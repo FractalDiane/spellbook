@@ -21,7 +21,6 @@ memorize cur
 turn to chapter Illusions
 write from memory under prev
 tear out chapter and toss it in the cauldron
-knock over cauldron
 turn to chapter Hexes
 memorize prev
 turn to chapter Illusions
@@ -31,7 +30,7 @@ memorize cur
 turn to chapter Illusions
 write from memory under prev
 turn to chapter Hexes
-pick up chapter off the floor and put it back
+take out chapter from the cauldron and put it back
 memorize first entry
 tear out chapter and throw it in the trash
 write from memory under cur
@@ -74,8 +73,7 @@ write from memory under i
 tear out chapter and toss it in the cauldron
 write 1 under add
 tear out chapter and toss it in the cauldron
-knock over cauldron
-pick up chapter off the floor and put it back
+take out chapter from the cauldron and put it back
 tear out chapter and put it in the drawer
 turn to chapter Hexes
 cast Squelch on the cauldron

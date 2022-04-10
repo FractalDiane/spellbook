@@ -32,14 +32,14 @@ Due to budget constraints, you have a *very* small spellbook to write in, with o
 
 ## Turning to and writing in chapter pages
 
-Before you write anything, you'll need to make sure you're turned to the right chapter, with the `turn to chapter` statement. Then you can use `write`...`under` to write something down in the chapter, under whatever heading name you'd like. Remember that each chapter can only have three entries!
+Before you write anything, you'll need to make sure you're turned to the right chapter. Then you can write something down in the chapter, under whatever heading name you'd like. Remember that each chapter can only have three entries!
 
 ```
 turn to chapter Illusions
 write 2.5 under my_float
 write 5.0 under my_float_2
 write 7.5 under my_float_3
-write 10.0 under my_float_4   ERROR! CAN ONLY PUT THREE ENTRIES ON A PAGE
+write 10.0 under my_float_4   CATASTROPHE! CAN ONLY PUT THREE ENTRIES ON A PAGE
 ```
 
 Note that entries are always written into a page in order, filling the first empty slot. For example, if a new entry is written in a page with only its third entry filled, it will be written to the first entry.
@@ -56,14 +56,21 @@ write true under my_bool
 THIS WRITES A VALUE OF ONE
 
 turn to chapter Illusions
-write "Hello" under my_string    ERROR! CAN'T CONVERT THAT
+write "Hello" under my_string    CATASTROPHE! CAN'T CONVERT THAT
+```
+
+Entries can also be copied into the next available slot.
+```
+turn to chapter Hexes
+write 5 under num
+copy num under num2
 ```
 
 ## Tearing out chapters
 
-You can only have three entries per chapter, and you're writing with a pen like a good author, so there's no erasing those entries once you write them. So, how do you get rid of them? Tear the entire chapter out with `tear out chapter`! The magical spellbook will generate a new blank one for you right away.
+You can only have three entries per chapter, and you're writing with a pen like a good author, so there's no erasing those entries once you write them. So, how do you get rid of them? Tear the entire chapter out! The magical spellbook will generate a new blank one for you right away.
 
-Of course, where are you going to put those chapters you tear out? The first option is the simplest: If you're so dissatisfied with your work that you want it gone forever, you can throw it in the trash like the worthless garbage that it is.
+Of course, where are you going to put those chapters you tear out? The first option is the simplest: If you're so dissatisfied with your work that you want it gone forever, you can throw it in the trash like the worthless garbage that it is. The other options will be discussed further on.
 
 ```
 tear out chapter and throw it in the trash
@@ -71,7 +78,7 @@ tear out chapter and throw it in the trash
 
 ## Publishing
 
-Publishing with `publish spellbook` allows you to share your immaculately-written spellbook with the world. This means putting your spellbook into print, of course.
+Publishing with allows you to share your immaculately-written spellbook with the world. This means putting your spellbook into print, of course.
 
 ```
 turn to page Incantations
@@ -98,7 +105,7 @@ THIS PRINTS HELLO, WORLD! AND THEN FIFTY-TWO
 
 Something else important to note is that published books need to be as perfectly wrapped up as possible, so by default your published spellbook will be terminated with a nice, fancy "THE END."
 
-If you want to end off your spellbook with something else, `sign acknowledgements page with` whatever string you'd like.
+If you want to end off your spellbook with something else, sign the acknowledgements page whatever string you'd like.
 ```
 STANDARD HELLO WORLD PROGRAM
 
@@ -120,6 +127,30 @@ sign acknowledgements page with ""
 publish spellbook
 publish spellbook
 publish spellbook
+```
+
+## Memorization
+
+One value at a time of any type can be memorized and then written back down wherever you want.
+```
+turn to chapter Hexes
+write 25 under num
+memorize num
+write from memory under num2
+
+turn to chapter Incantations
+write from memory under num3 AUTOMAGICALLY CONVERTS IT TO A STRING
+```
+
+However, memory can be unreliable, and writing an exceptionally long number or string from memory has a chance to produce incorrect results.
+
+When writing a long number from memory, digits past a certain point have a chance to randomly become something else. When writing a long string from memory, words past a certain point have a chance to disappear or be replaced with "something."
+```
+turn to chapter Incantations
+write "Hello this is a really long line of text that I'll probably forget some of" under string
+memorize string
+write from memory under string_copy
+SOME WORDS ARE PROBABLY GONE OR REPLACED WITH SOMETHING
 ```
 
 # The Drawer
@@ -166,15 +197,19 @@ There are four different mixing modes:
 
 The current mixing mode can be changed using the appropriate spell, discussed a bit later on.
 
-## Knocking over and collecting the cauldron's contents
+## Collecting the cauldron's contents
 
-The magical liquid in the cauldron is too concentrated and dangerous to touch, so there's no pulling the chapter out of there once it's in. Thankfully, there's an easy solution. Knock over the cauldron and grab the chapter off the floor.
+The chapter that's in the cauldron can be removed at any time and put back in the book.
 ```
-knock over cauldron
-pick up chapter off the floor and put it back
+take out chapter from the cauldron and put it back
 ```
 
 Note that just like when putting back a chapter from the drawer, the page's contents will be automagically converted to the current chapter's type if it doesn't match.
+
+The cauldron can also be knocked over to get rid of its contents immediately.
+```
+knock over cauldron
+```
 
 # Spells
 
@@ -205,6 +240,3 @@ The spells you can use are as follows:
 | Amplify | Increases the charge amplifier by 1, making spells increase the charge by +1 more. If Amplify is cast three times in a row with no other non-Vacancy spells in-between, the cauldron will overload catastrophically. | +0 | No |
 | Diminish | Decreases the current charge by 1. | -1 | No |
 | Squelch | Resets the charge to 0 and the amplifier to 1. | Resets to 0 | No |
-
-# Memorization
-

@@ -20,7 +20,8 @@ pub enum Keyphrase {
 	AndThrowItInTheTrash,
 	AndTossItInTheCauldron,
 	TakeOutAChapterFromTheDrawerAndPutItBack,
-	PickUpChapterOffTheFloorAndPutItBack,
+	TakeOutChapterFromTheCauldronAndPutItBack,
+	//PickUpChapterOffTheFloorAndPutItBack,
 
 	Write,
 	Under,
@@ -35,6 +36,7 @@ pub enum Keyphrase {
 	KnockOverCauldron,
 
 	PublishSpellbook,
+	PublishSpellbookTo,
 	SignChapterWith,
 	SignAcknowledgementsPageWith,
 
@@ -148,13 +150,8 @@ pub fn tokenize_line(line: String) -> Option<Vec<Token>> {
 				if expect_subtokens(&mut subtokens, &["out", "a", "chapter", "from", "the", "drawer", "and", "put", "it", "back"]) {
 					let token = Token::Keyphrase(Keyphrase::TakeOutAChapterFromTheDrawerAndPutItBack);
 					tokens.push(token);
-				} else {
-					return None;
-				}
-			},
-			"pick" => {
-				if expect_subtokens(&mut subtokens, &["up", "chapter", "off", "the", "floor", "and", "put", "it", "back"]) {
-					let token = Token::Keyphrase(Keyphrase::PickUpChapterOffTheFloorAndPutItBack);
+				} else if expect_subtokens(&mut subtokens, &["out", "chapter", "from", "the", "cauldron", "and", "put", "it", "back"]) {
+					let token = Token::Keyphrase(Keyphrase::TakeOutChapterFromTheCauldronAndPutItBack);
 					tokens.push(token);
 				} else {
 					return None;
@@ -205,7 +202,10 @@ pub fn tokenize_line(line: String) -> Option<Vec<Token>> {
 				}
 			},
 			"publish" => {
-				if expect_subtokens(&mut subtokens, &["spellbook"]) {
+				if expect_subtokens(&mut subtokens, &["spellbook", "to"]) {
+					let token = Token::Keyphrase(Keyphrase::PublishSpellbookTo);
+					tokens.push(token);
+				} else if expect_subtokens(&mut subtokens, &["spellbook"]) {
 					let token = Token::Keyphrase(Keyphrase::PublishSpellbook);
 					tokens.push(token);
 				} else {
@@ -510,7 +510,7 @@ fn execute_token(current: &Token, state: &mut ParserState, program: &mut Program
 					program.put_back_page(true);
 					state.clear_cache();
 				},
-				Keyphrase::PickUpChapterOffTheFloorAndPutItBack => {
+				Keyphrase::TakeOutChapterFromTheCauldronAndPutItBack => {
 					program.put_back_page(false);
 					state.clear_cache();
 				},
@@ -536,6 +536,24 @@ fn execute_token(current: &Token, state: &mut ParserState, program: &mut Program
 				Keyphrase::PublishSpellbook => {
 					program.publish(false, String::new());
 					state.clear_cache();
+				},
+				Keyphrase::PublishSpellbookTo => {
+					match current {
+						Token::Literal(lit) => {
+							match lit {
+								Variant::Str(string) => {
+									program.publish(true, string.clone());
+									state.clear_cache();
+								},
+								_ => {
+									sb_panic!(program.line_number);
+								},
+							}
+						},
+						_ => {
+							sb_panic!(program.line_number);
+						},
+					}
 				},
 				Keyphrase::SignAcknowledgementsPageWith => {
 					match current {
@@ -607,7 +625,8 @@ fn execute_token(current: &Token, state: &mut ParserState, program: &mut Program
 					program.exit = true;
 					state.clear_cache();
 				},
-				_ => {},
+
+				Keyphrase::FromMemory => {},
 			}
 		},
 	}

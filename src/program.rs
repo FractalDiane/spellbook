@@ -23,7 +23,6 @@ pub struct Program {
 	turned_to_any_page: bool,
 
 	drawer: Vec<Page>,
-	floor: Option<Page>,
 	memory: Option<Variant>,
 
 	custom_signature: String,
@@ -51,7 +50,6 @@ impl Program {
 			turned_to_any_page: false,
 
 			drawer: Vec::<Page>::new(),
-			floor: None,
 			memory: None,
 
 			custom_signature: String::new(),
@@ -205,7 +203,7 @@ impl Program {
 	}
 
 	pub fn knock_over_cauldron(&mut self) {
-		self.floor = self.cauldron.knock_over();
+		self.cauldron.knock_over();
 	}
 
 	pub fn sign_page(&mut self, with: String) {
@@ -289,7 +287,7 @@ impl Program {
 				},
 			}
 		} else {
-			match &self.floor {
+			match &self.cauldron.knock_over() {
 				Some(pg) => pg.clone(),
 				None => {
 					sb_panic!(self.line_number);
