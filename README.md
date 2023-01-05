@@ -232,6 +232,7 @@ The spells you can use are as follows:
 | Coadjuvancy | Asks the user for input and writes the value into the chapter that's in the cauldron. If the type doesn't match, it will be automagically converted. If the conversion fails, the user will be asked for input again. | +1 | Yes |
 | Antipodize | Inverts all values on the chapter currently in the cauldron. Boolean values are flipped, numbers are negated, and strings are reversed. The entry names of all the values will also be reversed. | +1 | Yes |
 | Judgement | Requires a Presages chapter in the cauldron. If *any* of the values on the chapter are false, lines will be skipped equal to the current spell charge. | +1 | Yes |
+| Juxtapose | Transforms the chapter in the cauldron into a Presages chapter, with its values set based on comparisons between the previous page's values. <li>Value 1 is true if the page's 2nd and 3rd values were not 0 or empty.</li> <li>Value 2 is true if the page's 1st value was greater than or equal to its 3rd value, either numerically or lexicographically.</li> <li>Value 3 is true if the page's 1st value was equal to its 2nd value. | +1 | Yes |
 | Reverberate | Jumps back to the first spell cast in the program, plus one spell per current level of charge. | Resets to 0 | No |
 | Entwinement | Changes the cauldron's mixing mode to Entwinement. | +1 | Yes |
 | Belittlement | Changes the cauldron's mixing mode to Belittlement. | +1 | Yes |
