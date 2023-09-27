@@ -1,6 +1,7 @@
 ANTI-CAPITALIST SOFTWARE LICENSE (v 1.4)
 
 Spellbook
+
 Copyright © 2022-2023 Diane Sparks
 
 This is anti-capitalist software, released for free use by individuals and organizations that do not operate by capitalist principles.
